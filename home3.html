@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SmartBank 🏦</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Reset & Base Styles from SmartBank */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', 'Roboto', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #222;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden; /* Prevent horizontal scroll from side menu */
+        }
+
+        /* Header from SmartBank */
+        header {
+            background: #0077cc;
+            color: #fff;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            /* Changed to center the title */
+            justify-content: center; /* Center the title */
+            flex-wrap: wrap;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            position: relative; /* For side menu toggle positioning */
+            z-index: 50; /* Ensure header is above main content */
+        }
+        header h1 {
+            margin: 0;
+            /* Make title bolder */
+            font-weight: 900;
+            font-size: 1.8rem;
+            user-select: none;
+        }
+
+        /* Settings container from SmartBank */
+        .settings-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: absolute; /* Position absolutely to not interfere with centering */
+            right: 1.5rem;
+            top: 1rem;
+        }
+        select {
+            border-radius: 6px;
+            border: none;
+            padding: 0.4rem 0.7rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.2); /* Subtle background for normal mode */
+            color: white; /* White text for normal mode */
+        }
+        select:focus {
+            outline: 2px solid #004a99;
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+        /* Ensure options are visible */
+        select option {
+            background-color: #0077cc; /* Match header background */
+            color: white;
+        }
+
+
+        /* App container from SmartBank */
+        .app-container {
+            flex: 1 0 auto;
+            padding: 1.5rem 1.5rem 3rem;
+            max-width: 900px;
+            margin: 1rem auto;
+            width: 100%;
+        }
+
+        /* User card from SmartBank */
+        .user-card {
+            background: linear-gradient(135deg, #0a74da, #005fa3);
+            color: white;
+            padding: 1.8rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 12px 25px rgba(10, 116, 218, 0.45);
+            margin-bottom: 2rem;
+            user-select: none;
+            animation: fadeInUp 0.6s ease forwards;
+            position: relative; /* Added for QR code positioning */
+        }
+        .user-card h2 {
+            margin: 0 0 0.2rem;
+            font-weight: 700;
+            font-size: 1.7rem;
+            letter-spacing: 0.02em;
+        }
+        .user-card p {
+            margin: 0;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+        }
+        .user-balance-container { /* New container for balance and eye icon */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 0.3rem;
+        }
+        .user-balance {
+            font-size: 2.6rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+        }
+        .toggle-balance-icon { /* Style for the eye icon */
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            transition: color 0.3s ease;
+        }
+        .toggle-balance-icon:hover {
+            color: white;
+        }
+        
+        .qr-code-placeholder { /* Style for the QR code */
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 80px; /* Adjust size as needed */
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .qr-code-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Quick actions from SmartBank */
+        .quick-actions {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            animation: fadeInUp 0.7s ease forwards;
+        }
+        .quick-actions button {
+            background: #0077cc;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.3rem;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,119,204,0.5);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            user-select: none;
+        }
+        .quick-actions button:hover,
+        .quick-actions button:focus {
+            background-color: #005fa3;
+            transform: scale(1.05);
+            outline: none;
+        }
+
+        /* Section titles from SmartBank & New Code */
+        section > h3 {
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 0.7rem;
+            user-select: none;
+            color: #004a99;
+            letter-spacing: 0.02em;
+        }
+        /* New Code's section title style */
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+
+        /* Lists from SmartBank */
+        ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        li {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem 1.3rem;
+            margin-bottom: 0.9rem;
+            box-shadow: 0 3px 7px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            cursor: default;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        li:focus,
+        li:hover {
+            box-shadow: 0 8px 18px rgba(0, 119, 204, 0.5);
+            transform: translateY(-2px);
+            outline: none;
+        }
+        /* Style for voice assistant active elements */
+        body.voice-active li,
+        body.voice-active .quick-actions button,
+        body.voice-active .feature-box,
+        body.voice-active section > h3,
+        body.voice-active .section-title,
+        body.voice-active .user-card h2,
+        body.voice-active .user-card p,
+        body.voice-active .feature-title,
+        body.voice-active .feature-description {
+            cursor: pointer !important; /* Indicate clickable for voice */
+            outline: 2px solid transparent; /* Default outline */
+            transition: outline 0.2s ease;
+        }
+        body.voice-active li:hover,
+        body.voice-active .quick-actions button:hover,
+        body.voice-active .feature-box:hover,
+        body.voice-active section > h3:hover,
+        body.voice-active .section-title:hover,
+        body.voice-active .user-card h2:hover,
+        body.voice-active .user-card p:hover,
+        body.voice-active .feature-title:hover,
+        body.voice-active .feature-description:hover {
+            outline: 2px solid #00ffff !important; /* Highlight for voice */
+        }
+
+
+        .left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+        .title {
+            font-size: 1.1rem;
+        }
+        .desc {
+            font-weight: 400;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .loan-amount {
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: #0077cc;
+        }
+
+        /* Transaction amounts from SmartBank */
+        .amount {
+            font-weight: 700;
+            font-size: 1rem;
+            min-width: 90px;
+            text-align: right;
+        }
+        .amount.positive {
+            color: #2ecc71;
+        }
+        .amount.negative {
+            color: #e74c3c;
+        }
+
+        /* Voice Assistant Button from SmartBank */
+        #voiceAssistantBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0ff;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 0 15px #0ff;
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            z-index: 90;
+        }
+        #voiceAssistantBtn:hover,
+        #voiceAssistantBtn:focus {
+            background-color: #00e6e6;
+            transform: scale(1.1);
+            outline: none;
+        }
+
+        /* AI Chatbot Button */
+        #chatBotBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 90px; /* Position next to voice assistant */
+            background: #8e44ad; /* Purple color */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(142, 68, 173, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            z-index: 90;
+        }
+        #chatBotBtn:hover,
+        #chatBotBtn:focus {
+            background-color: #6c3483;
+            transform: scale(1.1);
+            outline: none;
+        }
+
+        /* AI Chatbot Modal */
+        #chatModal {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 320px;
+            height: 400px;
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 100;
+            overflow: hidden;
+        }
+        #chatModal.active {
+            display: flex;
+        }
+        .chat-header {
+            background: #8e44ad;
+            color: white;
+            padding: 0.8rem 1rem;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        .chat-header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f8f8f8;
+        }
+        .chat-input {
+            display: flex;
+            padding: 0.8rem;
+            border-top: 1px solid #eee;
+            background-color: #fff;
+        }
+        .chat-input input {
+            flex-grow: 1;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+        }
+        .chat-input button {
+            background: #8e44ad;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .chat-input button:hover {
+            background-color: #6c3483;
+        }
+        .message-bubble {
+            max-width: 80%;
+            padding: 0.6rem 1rem;
+            border-radius: 15px;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        .message-user {
+            background-color: #e0f7fa; /* Light blue */
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .message-bot {
+            background-color: #f3e5f5; /* Light purple */
+            align-self: flex-start;
+            margin-right: auto;
+        }
+        
+        /* UPI PIN Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            color: #333;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            text-align: center;
+            letter-spacing: 0.2em;
+        }
+        .modal-content button {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .modal-content button:hover {
+            background-color: #005fa3;
+        }
+
+
+        /* Animations from SmartBank */
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive from SmartBank */
+        @media (max-width: 600px) {
+            .user-card {
+                padding: 1.4rem 1.5rem;
+                border-radius: 16px;
+                margin-bottom: 1.5rem;
+            }
+            .user-card h2 {
+                font-size: 1.4rem;
+            }
+            .user-balance {
+                font-size: 2rem;
+            }
+            .quick-actions {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .quick-actions button {
+                justify-content: center;
+                font-size: 1.1rem;
+                padding: 0.75rem 1rem;
+            }
+            li {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.4rem;
+                font-size: 0.95rem;
+            }
+            .amount {
+                min-width: auto;
+                align-self: flex-end;
+                font-size: 1rem;
+            }
+            /* Adjust side menu toggle position for small screens */
+            #side-menu-toggle {
+                top: 0.7rem;
+                left: 0.7rem;
+            }
+            #chatModal {
+                width: 90%;
+                right: 5%;
+                bottom: 80px;
+            }
+            #chatBotBtn {
+                right: 20px; /* Move chatbot button to the right */
+            }
+            .settings-container {
+                right: 0.7rem; /* Adjust for smaller screens */
+                top: 0.7rem;
+            }
+        }
+
+        /* === MODE THEMES (SmartBank) === */
+
+        /* Normal Mode - default */
+        body.mode-normal {
+            background: #f5f7fa;
+            color: #222;
+        }
+        body.mode-normal header {
+            background: #0077cc;
+            color: white;
+        }
+        body.mode-normal .user-card {
+            background: linear-gradient(135deg, #0a74da, #005fa3);
+            color: white;
+            box-shadow: 0 12px 25px rgba(10, 116, 218, 0.45);
+        }
+        body.mode-normal section > h3 {
+            color: #004a99;
+        }
+        body.mode-normal .quick-actions button {
+            background: #0077cc;
+            box-shadow: 0 5px 15px rgba(0,119,204,0.5);
+        }
+        body.mode-normal .quick-actions button:hover {
+            background-color: #005fa3;
+        }
+        body.mode-normal li {
+            background: white;
+            color: #222;
+        }
+        body.mode-normal .feature-box { /* Apply normal mode styles to new feature boxes */
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+        body.mode-normal .feature-title {
+            color: #1e293b;
+        }
+        body.mode-normal .feature-description {
+            color: #4b5563;
+        }
+        body.mode-normal .section-title {
+            color: #1e293b;
+        }
+        body.mode-normal #chatModal {
+            background: #ffffff;
+            color: #222;
+        }
+        body.mode-normal .chat-header {
+            background: #8e44ad;
+            color: white;
+        }
+        body.mode-normal .chat-messages {
+            background-color: #f8f8f8;
+        }
+        body.mode-normal .chat-input input {
+            background-color: #fff;
+            color: #222;
+            border: 1px solid #ddd;
+        }
+        body.mode-normal .chat-input button {
+            background: #8e44ad;
+        }
+
+
+        /* Senior Mode */
+        body.mode-senior {
+            background: #fff4e5;
+            color: #4a2c0f;
+            font-size: 1.35rem; /* Increased font size */
+        }
+        body.mode-senior header {
+            background: #d97706; /* amber-600 */
+            color: #fff9db;
+        }
+        body.mode-senior select {
+            background-color: rgba(255, 244, 229, 0.3);
+            color: #fff9db;
+        }
+        body.mode-senior select option {
+            background-color: #d97706;
+            color: #fff9db;
+        }
+        body.mode-senior .user-card {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: #fff9db;
+            box-shadow: 0 12px 25px rgba(217, 119, 6, 0.45);
+        }
+        body.mode-senior .user-card h2,
+        body.mode-senior .user-balance {
+            font-weight: 900; /* Make balance bold */
+        }
+        body.mode-senior section > h3 {
+            color: #b45309;
+            font-weight: 900; /* Make section titles bold */
+        }
+        body.mode-senior .quick-actions button {
+            background: #d97706;
+            box-shadow: 0 5px 15px rgba(217,119,6,0.5);
+            font-weight: 700; /* Make buttons bold */
+        }
+        body.mode-senior .quick-actions button:hover {
+            background-color: #b45309;
+        }
+        body.mode-senior li {
+            background: #fff9db;
+            color: #4a2c0f;
+            font-weight: 700; /* Make list items bold */
+        }
+        body.mode-senior .title,
+        body.mode-senior .loan-amount,
+        body.mode-senior .amount {
+            font-weight: 900; /* Make specific amounts/titles bold */
+        }
+        body.mode-senior .feature-box { /* Apply senior mode styles to new feature boxes */
+            background-color: #fff9db;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+        body.mode-senior .feature-title {
+            color: #4a2c0f;
+            font-weight: 900; /* Make feature titles bold */
+        }
+        body.mode-senior .feature-description {
+            color: #7c4c1d;
+            font-weight: 700; /* Make feature descriptions bold */
+        }
+        body.mode-senior .section-title {
+            color: #b45309;
+            font-weight: 900; /* Make section titles bold */
+        }
+        body.mode-senior .quick-actions button,
+        body.mode-senior .feature-box button {
+            font-size: 1.4rem; /* Larger buttons for senior mode */
+            padding: 1.2rem 1.7rem;
+        }
+        body.mode-senior .feature-icon,
+        body.mode-senior .menu-icon {
+            width: 4.5rem; /* Larger icons */
+            height: 4.5rem;
+        }
+        body.mode-senior .user-balance {
+            font-size: 3.5rem; /* Larger balance text */
+        }
+        body.mode-senior #side-menu {
+            background-color: rgba(255, 244, 229, 0.95); /* Senior mode background for side menu */
+            color: #4a2c0f;
+        }
+        body.mode-senior #profile-name,
+        body.mode-senior .nav-menu-item {
+            color: #4a2c0f;
+            font-weight: 700;
+        }
+        body.mode-senior #profile-name-input {
+            color: #4a2c0f;
+            font-weight: 700;
+            background-color: #fff9db;
+            border: 1px solid #d97706;
+        }
+        body.mode-senior .nav-menu-item:hover {
+            background-color: #d97706;
+            color: #fff9db;
+        }
+        body.mode-senior #dark-mode-toggle {
+            color: #4a2c0f; /* Dark mode toggle in senior mode should match senior theme */
+        }
+        body.mode-senior #dark-mode-toggle:hover {
+            background-color: #d97706;
+            color: #fff9db;
+        }
+        body.mode-senior #side-menu-toggle {
+            color: #b45309; /* Senior mode color for toggle icon */
+            background-color: rgba(255, 244, 229, 0.8);
+        }
+        body.mode-senior #chatModal {
+            background: #fff4e5;
+            color: #4a2c0f;
+        }
+        body.mode-senior .chat-header {
+            background: #d97706;
+            color: #fff9db;
+        }
+        body.mode-senior .chat-messages {
+            background-color: #fff9db;
+        }
+        body.mode-senior .chat-input input {
+            background-color: #fff4e5;
+            color: #4a2c0f;
+            border: 1px solid #b45309;
+        }
+        body.mode-senior .chat-input button {
+            background: #d97706;
+        }
+
+
+        /* Visual Impairment Mode */
+        body.mode-visual {
+            background: #000000;
+            color: #f0f0f0;
+            font-weight: 700;
+            font-size: 1.5rem; /* Increased font size for visual impairment */
+        }
+        body.mode-visual header {
+            background: #222222;
+            color: #00ffff;
+        }
+        body.mode-visual select {
+            background-color: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+        }
+        body.mode-visual select option {
+            background-color: #222222;
+            color: #00ffff;
+        }
+        body.mode-visual .user-card {
+            background: #000000;
+            color: #00ffff;
+            box-shadow: 0 12px 25px #00ffff;
+        }
+        body.mode-visual section > h3 {
+            color: #00ffff;
+        }
+        body.mode-visual .quick-actions button {
+            background: #00ffff;
+            color: black;
+            box-shadow: 0 5px 15px #00ffff;
+        }
+        body.mode-visual .quick-actions button:hover {
+            background-color: #00cccc;
+            color: black;
+        }
+        body.mode-visual li {
+            background: #111111;
+            color: #00ffff;
+            font-weight: 700;
+        }
+        body.mode-visual .amount.positive {
+            color: #00ff99;
+        }
+        body.mode-visual .amount.negative {
+            color: #ff4c4c;
+        }
+        body.mode-visual .feature-box { /* Apply visual impairment styles to new feature boxes */
+            background-color: #111111;
+            color: #00ffff;
+            box-shadow: 0 12px 25px #00ffff;
+        }
+        body.mode-visual .feature-title {
+            color: #00ffff;
+        }
+        body.mode-visual .feature-description {
+            color: #00ccff;
+        }
+        body.mode-visual .section-title {
+            color: #00ffff;
+        }
+        body.mode-visual .quick-actions button,
+        body.mode-visual .feature-box button {
+            font-size: 1.6rem; /* Even larger buttons */
+            padding: 1.4rem 2rem;
+        }
+        body.mode-visual .feature-icon,
+        body.mode-visual .menu-icon {
+            width: 5rem; /* Even larger icons */
+            height: 5rem;
+        }
+        body.mode-visual .user-balance {
+            font-size: 4rem; /* Even larger balance text */
+        }
+        body.mode-visual #side-menu {
+            background-color: rgba(0, 0, 0, 0.95); /* Visual mode background for side menu */
+            color: #00ffff;
+        }
+        body.mode-visual #profile-name,
+        body.mode-visual .nav-menu-item {
+            color: #00ffff;
+        }
+        body.mode-visual #profile-name-input {
+            color: #00ffff;
+            font-weight: 700;
+            background-color: #111111;
+            border: 1px solid #00ffff;
+        }
+        body.mode-visual .nav-menu-item:hover {
+            background-color: #00ffff;
+            color: black;
+        }
+        body.mode-visual #dark-mode-toggle {
+            color: #00ffff; /* Dark mode toggle in visual mode should match visual theme */
+        }
+        body.mode-visual #dark-mode-toggle:hover {
+            background-color: #00ffff;
+            color: black;
+        }
+        body.mode-visual #side-menu-toggle {
+            color: #00ffff; /* Visual mode color for toggle icon */
+            background-color: rgba(17, 17, 17, 0.8);
+        }
+        body.mode-visual #chatModal {
+            background: #000000;
+            color: #00ffff;
+        }
+        body.mode-visual .chat-header {
+            background: #222222;
+            color: #00ffff;
+        }
+        body.mode-visual .chat-messages {
+            background-color: #111111;
+        }
+        body.mode-visual .chat-input input {
+            background-color: #000000;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+        }
+        body.mode-visual .chat-input button {
+            background: #00ffff;
+            color: black;
+        }
+
+
+        /* === NEW CODE STYLES === */
+        /* Tailwind base should be loaded first, then custom overrides */
+        .feature-box {
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Align content to the left */
+        }
+
+        .feature-box:hover {
+            transform: translateY(-0.5rem);
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15), 0 10px 12px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            width: 3rem;
+            height: 3rem;
+            margin-bottom: 1rem;
+            color: #0077cc; /* Adjusted to SmartBank primary color */
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            font-size: 1rem;
+        }
+        .feature-box button {
+            background: #0077cc; /* Adjusted to SmartBank primary color */
+            color: white;
+            border: none;
+            padding: 0.8rem 1.3rem;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,119,204,0.5);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            user-select: none;
+            margin-top: auto; /* Push button to bottom */
+            text-align: center;
+        }
+        .feature-box button:hover {
+            background-color: #005fa3; /* Adjusted to SmartBank hover color */
+            transform: scale(1.05);
+        }
+
+        .menu-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            margin-bottom: 1rem;
+            object-fit: contain; /* Ensure images fit */
+        }
+
+        /* Styles for the side menu */
+        #side-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 280px; /* Slightly wider */
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #side-menu.active {
+            transform: translateX(0);
+        }
+
+        #side-menu-toggle {
+            position: absolute; /* Relative to header */
+            top: 1rem;
+            left: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 101; /* Above side menu */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0077cc; /* Default color for toggle icon */
+        }
+        #side-menu-toggle:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+        #side-menu-toggle svg {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        #side-menu-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #1e293b;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        #side-menu-close-btn:hover {
+            background-color: #e0e0e0;
+        }
+        body.mode-senior #side-menu-close-btn {
+            color: #4a2c0f;
+        }
+        body.mode-senior #side-menu-close-btn:hover {
+            background-color: #fff9db;
+        }
+        body.mode-visual #side-menu-close-btn {
+            color: #00ffff;
+        }
+        body.mode-visual #side-menu-close-btn:hover {
+            background-color: #111111;
+        }
+        body.mode-normal.dark-mode-active #side-menu-close-btn {
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active #side-menu-close-btn:hover {
+            background-color: #4299e1;
+        }
+
+
+        #profile-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            cursor: pointer;
+        }
+
+        #profile-image {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            margin-right: 1rem;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #555;
+            overflow: hidden;
+            border: 2px solid #0077cc;
+            cursor: pointer; /* Indicate clickable */
+        }
+        #profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #profile-name {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #1e293b;
+            cursor: pointer; /* Indicate it's clickable for editing */
+            padding: 0.2rem 0.5rem; /* Add some padding for better click target */
+            border-radius: 0.3rem;
+            transition: background-color 0.2s ease;
+        }
+        #profile-name:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        #profile-name-input {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #1e293b;
+            border: 1px solid #ccc;
+            border-radius: 0.3rem;
+            padding: 0.2rem 0.5rem;
+            background-color: white;
+            outline: none;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            width: calc(100% - 4rem - 1rem); /* Adjust width based on image and margin */
+        }
+        body.mode-normal.dark-mode-active #profile-name-input {
+            background-color: #2d3748;
+            color: #f7fafc;
+            border-color: #4299e1;
+        }
+
+
+        .nav-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: #1e293b;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-bottom: 0.5rem;
+            text-decoration: none; /* For potential anchor tags */
+        }
+
+        .nav-menu-item:hover {
+            background-color: #0077cc; /* SmartBank primary color */
+            color: white;
+        }
+        .nav-menu-item svg {
+            margin-right: 0.75rem;
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        #mode-options {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        #dark-mode-toggle, #voice-gender-select {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: #1e293b;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        #dark-mode-toggle:hover, #voice-gender-select:hover {
+            background-color: #0077cc;
+            color: white;
+        }
+
+        #dark-mode-switch {
+            width: 3rem;
+            height: 1.5rem;
+            background-color: #e0e0e0;
+            border-radius: 0.75rem;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        #dark-mode-switch.active {
+            background-color: #0077cc; /* Primary color for active state */
+        }
+
+        #dark-mode-switch-circle {
+            width: 1.25rem;
+            height: 1.25rem;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 0.125rem;
+            left: 0.125rem;
+            transition: transform 0.3s ease;
+        }
+
+        #dark-mode-switch-circle.active {
+            transform: translateX(1.5rem);
+        }
+
+        #voice-gender-select select {
+            background-color: transparent;
+            border: none;
+            color: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            padding: 0;
+            cursor: pointer;
+            width: auto;
+        }
+        #voice-gender-select select option {
+            background-color: white; /* Default for options */
+            color: #1e293b;
+        }
+        body.mode-senior #voice-gender-select select option {
+            background-color: #fff9db;
+            color: #4a2c0f;
+        }
+        body.mode-visual #voice-gender-select select option {
+            background-color: #111111;
+            color: #00ffff;
+        }
+        body.mode-normal.dark-mode-active #voice-gender-select select option {
+            background-color: #2d3748;
+            color: #f7fafc;
+        }
+
+
+        .rotate-icon {
+            animation: rotate 2s linear infinite;
+        }
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Dark mode styles (applied only to Normal mode) */
+        body.mode-normal.dark-mode-active {
+            background-color: #1a202c; /* Darker background */
+            color: #f7fafc; /* Lighter text */
+        }
+        body.mode-normal.dark-mode-active header {
+            background-color: #2d3748; /* Darker header */
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active select {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active select option {
+            background-color: #2d3748;
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active .user-card {
+            background: linear-gradient(135deg, #4299e1, #2b6cb0); /* Darker gradient */
+            color: #f7fafc;
+            box-shadow: 0 12px 25px rgba(66, 153, 225, 0.45);
+        }
+        body.mode-normal.dark-mode-active section > h3 {
+            color: #4299e1; /* Lighter blue for titles */
+        }
+        body.mode-normal.dark-mode-active .quick-actions button {
+            background: #4299e1;
+            box-shadow: 0 5px 15px rgba(66,153,225,0.5);
+        }
+        body.mode-normal.dark-mode-active .quick-actions button:hover {
+            background-color: #2b6cb0;
+        }
+        body.mode-normal.dark-mode-active li {
+            background: #2d3748; /* Darker list items */
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active .amount.positive {
+            color: #68d391; /* Lighter green */
+        }
+        body.mode-normal.dark-mode-active .amount.negative {
+            color: #fc8181; /* Lighter red */
+        }
+        body.mode-normal.dark-mode-active .feature-box {
+            background-color: rgba(45, 55, 72, 0.8); /* Darker feature boxes */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+        }
+        body.mode-normal.dark-mode-active .feature-title {
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active .feature-description {
+            color: #cbd5e0;
+        }
+        body.mode-normal.dark-mode-active .section-title {
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active .feature-box button {
+            background-color: #4299e1;
+            box-shadow: 0 5px 15px rgba(66,153,225,0.5);
+        }
+        body.mode-normal.dark-mode-active .feature-box button:hover {
+            background-color: #2b6cb0;
+        }
+        body.mode-normal.dark-mode-active #side-menu {
+            background-color: rgba(45, 55, 72, 0.95);
+            color: #f7fafc;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.3);
+        }
+        body.mode-normal.dark-mode-active #profile-name,
+        body.mode-normal.dark-mode-active .nav-menu-item {
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active .nav-menu-item:hover {
+            background-color: #4299e1;
+        }
+        body.mode-normal.dark-mode-active #dark-mode-toggle,
+        body.mode-normal.dark-mode-active #voice-gender-select {
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active #dark-mode-toggle:hover,
+        body.mode-normal.dark-mode-active #voice-gender-select:hover {
+            background-color: #4299e1;
+        }
+        body.mode-normal.dark-mode-active #dark-mode-switch.active {
+            background-color: #4299e1;
+        }
+        body.mode-normal.dark-mode-active #chatModal {
+            background: #2d3748;
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active .chat-header {
+            background: #4299e1;
+            color: #f7fafc;
+        }
+        body.mode-normal.dark-mode-active .chat-messages {
+            background-color: #1a202c;
+        }
+        body.mode-normal.dark-mode-active .chat-input input {
+            background-color: #2d3748;
+            color: #f7fafc;
+            border: 1px solid #4299e1;
+        }
+        body.mode-normal.dark-mode-active .chat-input button {
+            background: #4299e1;
+        }
+
+
+    </style>
+</head>
+<body class="mode-normal">
+
+<header>
+    <div id="side-menu-toggle" aria-label="Toggle side menu">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+    </div>
+    <h1 id="appTitle">SmartBank</h1>
+    <div class="settings-container" aria-label="User settings">
+        <label for="modeSelect" class="sr-only">Select Mode</label>
+        <select id="modeSelect" aria-label="Select Accessibility Mode" title="Choose Accessibility Mode">
+            <option value="normal">🟢 Normal</option>
+            <option value="senior">🟠 Senior</option>
+            <option value="visual">🔵 Visual Impairment</option>
+        </select>
+
+        <label for="languageSelect" class="sr-only">Select Language</label>
+        <select id="languageSelect" aria-label="Select Language" title="Choose Language">
+            <option value="en">🇬🇧 English</option>
+            <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+            <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
+            <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+        </select>
+    </div>
+</header>
+
+<div id="side-menu">
+    <button id="side-menu-close-btn" aria-label="Close side menu">✖️</button>
+    <div id="profile-section" aria-label="User profile">
+        <div id="profile-image">
+            <img src="https://placehold.co/150x150/0077cc/ffffff?text=JD" alt="Profile Picture">
+        </div>
+        <div id="profile-name">John Doe</div>
+        <input type="file" id="profileImageUpload" accept="image/*" style="display: none;">
+    </div>
+    <nav id="nav-menu" aria-label="Main navigation">
+        <a href="#" class="nav-menu-item" role="menuitem">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12h.375M3.75 17.25v-.75a3 3 0 013-3h15a3 3 0 013 3v.75m-16.5-10.5v.75a3 3 0 003 3h15a3 3 0 003-3v-.75M2.25 6.75h.375m1.5-3h16.5m-16.5 2.25v.75a3 3 0 013 3h15a3 3 0 013-3v-.75" />
+            </svg>
+            Dashboard
+        </a>
+        <a href="#" class="nav-menu-item" role="menuitem">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.53a4.5 4.5 0 015.822 0l.879-.53a.75.75 0 001.075-1.302L15.5 17h2.5a.75.75 0 000-1.5H12a.75.75 0 010-1.5h2.5a.75.75 0 000-1.5H15.5l-.326-.196a.75.75 0 00-1.075-1.302l-.879.53a4.5 4.5 0 01-5.822 0l-.879-.53a.75.75 0 00-1.075 1.302L8.5 7h-2.5a.75.75 0 000 1.5H12a.75.75 0 010 1.5h-2.5a.75.75 0 000 1.5H8.5l.326.196a.75.75 0 001.075 1.302z" />
+            </svg>
+            Transactions
+        </a>
+        <a href="#" class="nav-menu-item" role="menuitem">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 14.25a3 3 0 01-3 3h-6a3 3 0 01-3-3V12a3 3 0 013-3h6a3 3 0 013 3v2.25z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V8.25a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v2.25" />
+            </svg>
+            Accounts
+        </a>
+        <a href="#" class="nav-menu-item" role="menuitem">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l.75-1.5H10.5l.75 1.5m-6 3.75h.008v.008h.008v.008H6.75v-.008zm0 3h.008v.008h.008v.008H6.75v-.008zm0 3h.008v.008h.008v.008H6.75v-.008zm3.75-9h.008v.008h.008v.008H10.5v-.008zm0 9h.008v.008h.008v.008H10.5v-.008zm0-3h.008v.008h.008v.008H10.5v-.008zm3.75-9h.008v.008h.008v.008H14.25v-.008zm0 9h.008v.008h.008v.008H14.25v-.008zm0-3h.008v.008h.008v.008H14.25v-.008zm3.75-9h.008v.008h.008v.008H18v-.008zm0 9h.008v.008h.008v.008H18v-.008zm0-3h.008v.008h.008v.008H18v-.008zM6.75 19.5h10.5a.75.75 0 000-1.5H6.75a.75.75 0 000 1.5z" />
+            </svg>
+            Payments
+        </a>
+        <a href="#" class="nav-menu-item" role="menuitem">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+            Investments
+        </a>
+    </nav>
+    <div id="mode-options">
+        <div id="dark-mode-toggle" aria-label="Toggle Dark Mode">
+            <span>Dark Mode</span>
+            <div id="dark-mode-switch">
+                <div id="dark-mode-switch-circle"></div>
+            </div>
+        </div>
+        <div id="voice-gender-select" aria-label="Select Voice Gender">
+            <span>Voice Gender</span>
+            <select id="genderSelect" aria-label="Select Voice Gender">
+                <option value="default">Default</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<main class="app-container" role="main">
+    <section class="user-card" aria-label="User information">
+        <div class="qr-code-placeholder">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=SmartBankUser" alt="QR Code">
+        </div>
+        <h2 id="greeting">Hello, Smarty</h2>
+        <p id="balanceLabel">Current Balance</p>
+        <div class="user-balance-container">
+            <span class="user-balance" id="userBalance">****.xx</span>
+            <i class="fas fa-eye toggle-balance-icon" id="toggleBalanceIcon"></i>
+        </div>
+    </section>
+
+    <section aria-label="Quick actions">
+        <div class="quick-actions" role="list" aria-live="polite">
+            <button type="button" id="payBtn" title="Make a Payment"><a href="pay2.html"> Scan</a></button>
+            <button type="button" id="transferBtn" title="Transfer Money"><a href="transfer.html"> Transfer</a></button>
+            <button type="button" id="depositBtn" title="Deposit Money"><a href="deposit.html"> Deposit</a></button>
+            <button type="button" id="statementBtn" title="View Statements"><a href="statement.html"> Statement</a></button>
+        </div>
+    </section>
+
+    <section aria-label="Reminders" tabindex="0">
+        <h3 id="reminderTitle">📅 Reminders</h3>
+        <ul id="reminderList" role="list">
+            </ul>
+    </section>
+
+    <section aria-label="Offers" tabindex="0">
+        <h3 id="offersTitle">🎁 Offers</h3>
+        <ul>
+            <li>
+                <span class="title" id="offer1Title">Cashback on Shopping</span><br />
+                <span class="desc" id="offer1Desc">Get 5% cashback on your next 3 purchases</span>
+            </li>
+            <li>
+                <span class="title" id="offer2Title">Loan Pre-approval</span><br />
+                <span class="desc" id="offer2Desc">Apply now for quick approval</span>
+            </li>
+        </ul>
+    </section>
+
+    <section aria-label="Loans" tabindex="0">
+        <h3 id="loansTitle">💳 Loans</h3>
+        <ul>
+            <li>
+                <div class="left">
+                    <span class="title" id="loan1Type">Home Loan</span>
+                    <span class="desc" id="loan1Due">Due Date: 15 June 2025</span>
+                </div>
+                <span class="loan-amount" id="loan1Amount">₹ 5,00,000</span>
+            </li>
+            <li>
+                <div class="left">
+                    <span class="title" id="loan2Type">Car Loan</span>
+                    <span class="desc" id="loan2Due">Due Date: 30 July 2025</span>
+                </div>
+                <span class="loan-amount" id="loan2Amount">₹ 2,00,000</span>
+            </li>
+        </ul>
+    </section>
+
+    <section aria-label="Transactions" tabindex="0">
+        <h3 id="transactionsTitle">💸 Transactions</h3>
+        <ul id="transactionList" role="list">
+            </ul>
+    </section>
+
+    <section class="mb-12">
+        <h2 class="section-title">Manage Your Money</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="feature-box">
+                <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/gem.svg" alt="Gold Loan" class="feature-icon" />
+                <h3 class="feature-title">Gold Loan</h3>
+                <p class="feature-description">Interest rate starting at 0.96% monthly. Apply now.</p>
+                <button type="button" onclick="alert('Gold Loan functionality not implemented yet')">Apply Now</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/activity.svg" alt="CIBIL Score" class="feature-icon" />
+                <h3 class="feature-title">Check your CIBIL score</h3>
+                <p class="feature-description">See your credit score details.</p>
+                <button type="button" onclick="alert('CIBIL Score functionality not implemented yet')">Check Now</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/rotate-ccw.svg" alt="Transaction History" class="feature-icon" />
+                <h3 class="feature-title">See Transaction History</h3>
+                <p class="feature-description">View your past transactions.</p>
+                <button type="button" onclick="alert('Transaction History functionality not implemented yet')">View History</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/banknote.svg" alt="Check Bank Balance" class="feature-icon" />
+                <h3 class="feature-title">Check Bank Balance</h3>
+                <p class="feature-description">View your account balance.</p>
+                <button type="button" onclick="alert('Bank Balance functionality not implemented yet')">View Balance</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/gift.svg" alt="Rewards" class="feature-icon" />
+                <h3 class="feature-title">Rewards</h3>
+                <p class="feature-description">View your earned rewards.</p>
+                <button type="button" onclick="alert('Rewards functionality not implemented yet')">View Rewards</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/percent.svg" alt="Offers" class="feature-icon" />
+                <h3 class="feature-title">Offers</h3>
+                <p class="feature-description">Check exciting offers.</p>
+                <button type="button" onclick="alert('Offers functionality not implemented yet')">View Offers</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/users.svg" alt="Referrals" class="feature-icon" />
+                <h3 class="feature-title">Referrals</h3>
+                <p class="feature-description">Refer and earn money.</p>
+                <button type="button" onclick="alert('Referrals functionality not implemented yet')">Refer Now</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-12">
+        <h2 class="section-title">Bills & Recharges</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
+            <div class="feature-box">
+                <img src="https://www.jiocare.com/themes/reliance/img/recharge-new/hotstar.png" alt="JioHotstar" class="menu-icon" />
+                <h3 class="feature-title">JioHotstar</h3>
+                <p class="feature-description">Book Now</p>
+                <button type="button" onclick="alert('JioHotstar functionality not implemented yet')">Book Now</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://cdn.iconscout.com/icon/free/png-512/indane-gas-lpg-cylinder-57196.png?f=avif&quality=80" alt="Indane Gas" class="menu-icon" />
+                <h3 class="feature-title">Indane Gas</h3>
+                <p class="feature-description">Book Now</p>
+                <button type="button" onclick="alert('Indane Gas functionality not implemented yet')">Book Now</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/TANGEDCO_logo.svg/1200px-TANGEDCO_logo.svg.png" alt="Tamil Nadu Electricity" class="menu-icon" />
+                <h3 class="feature-title">TN Electricity</h3>
+                <p class="feature-description">Pay Due Bill</p>
+                <button type="button" onclick="alert('Tamil Nadu Electricity functionality not implemented yet')">Pay Now</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://www.logo.wine/wp-content/uploads/2019/10/Airtel_logo.svg" alt="Airtel" class="menu-icon" />
+                <h3 class="feature-title">Airtel</h3>
+                <p class="feature-description">Get Data</p>
+                <button type="button" onclick="alert('Airtel functionality not implemented yet')">Get Data</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://download.logo.wine/logo/Mobile_recharge/Mobile_recharge-Logo.wine.png" alt="Mobile Recharge" class="menu-icon" />
+                <h3 class="feature-title">Mobile Recharge</h3>
+                <p class="feature-description">Recharge Now</p>
+                <button type="button" onclick="alert('Mobile Recharge functionality not implemented yet')">Recharge</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://static.startuptalky.com/2021/06/dth-logo-startuptalky.jpg" alt="DTH/Cable TV" class="menu-icon" />
+                <h3 class="feature-title">DTH/Cable TV</h3>
+                <p class="feature-description">View plans</p>
+                <button type="button" onclick="alert('DTH/Cable TV functionality not implemented yet')">View Plans</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://www.nicepng.com/png/full/207-2078489_electricity-icon-vector-electric-icon-png.png" alt="Electricity" class="menu-icon" />
+                <h3 class="feature-title">Electricity</h3>
+                <p class="feature-description">Pay Bill</p>
+                <button type="button" onclick="alert('Electricity functionality not implemented yet')">Pay Bill</button>
+            </div>
+            <div class="feature-box">
+                <img src="https://seeklogo.com/images/L/lic-logo-19B8C9D295-seeklogo.com.png" alt="LIC / Insurance" class="menu-icon" />
+                <h3 class="feature-title">LIC / Insurance</h3>
+                <p class="feature-description">Pay Premium</p>
+                <button type="button" onclick="alert('LIC / Insurance functionality not implemented yet')">Pay</button>
+            </div>
+        </div>
+        <div class="mt-6 text-center">
+            <button type="button" onclick="alert('View all Bills and Recharges options not implemented yet')">View All</button>
+        </div>
+    </section>
+
+    <section class="mb-12">
+        <h2 class="section-title">Businesses</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+            <div class="feature-box">
+                <img src="https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/briefcase.svg" alt="Explore" class="feature-icon" />
+                <h3 class="feature-title">Explore</h3>
+                <p class="feature-description">Explore our business services.</p>
+                <button type="button" onclick="alert('Business functionality not implemented yet')">Explore</button>
+            </div>
+        </div>
+    </section>
+</main>
+
+<button id="voiceAssistantBtn" aria-label="Activate Voice Assistant" title="Voice Assistant">🗣️</button>
+
+<button id="chatBotBtn" aria-label="Open Chatbot" title="Chat with AI">🤖</button>
+
+<div id="upiPinModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close-btn" id="upiPinCloseBtn">&times;</span>
+        <h3>Enter UPI PIN to View Balance</h3>
+        <input type="password" id="upiPinInput" placeholder="Enter PIN" maxlength="6" autocomplete="off">
+        <button id="verifyUpiPinBtn">Verify PIN</button>
+    </div>
+</div>
+
+<div id="chatModal">
+    <div class="chat-header">
+        <span>AI Assistant</span>
+        <button id="closeChatBtn" aria-label="Close Chatbot">✖️</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        </div>
+    <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Type your message..." aria-label="Chat input" />
+        <button id="sendChatBtn" aria-label="Send message">Send</button>
+    </div>
+</div>
+
+<script>
+    // Translation data
+    const translations = {
+        en: {
+            appTitle: "SmartBank ",
+            greeting: "Hello,Smarty",
+            balanceLabel: "Current Balance",
+            userBalance: "₹ 75,000.00 ",
+            reminderTitle: "📅 Reminders",
+            reminderList: [
+                "Credit card bill due in 3 days 🕒",
+                "Investment maturity on 25th May 📈",
+                "Insurance renewal next week 🛡️"
+            ],
+            offersTitle: "🎁 Offers",
+            offer1Title: "Cashback on Shopping",
+            offer1Desc: "Get 5% cashback on your next 3 purchases",
+            offer2Title: "Loan Pre-approval",
+            offer2Desc: "Apply now for quick approval",
+            loansTitle: "💳 Loans",
+            loan1Type: "Home Loan",
+            loan1Due: "Due Date: 15 June 2025",
+            loan1Amount: "₹ 5,00,000",
+            loan2Type: "Car Loan",
+            loan2Due: "Due Date: 30 July 2025",
+            loan2Amount: "₹ 2,00,000",
+            transactionsTitle: "💸 Transactions",
+            transactions: [
+                { desc: "Grocery Store", date: "May 14, 2025", amount: "-₹800", color: "negative" },
+                { desc: "Salary credited", date: "May 10, 2025", amount: "+₹5,000", color: "positive" },
+                { desc: "Uber Ride", date: "May 9, 2025", amount: "-₹1,200", color: "negative" },
+                { desc: "Electricity Bill", date: "May 5, 2025", amount: "-₹3,000", color: "negative" }
+            ],
+            manageMoneyTitle: "Manage Your Money",
+            goldLoanTitle: "Gold Loan",
+            goldLoanDesc: "Interest rate starting at 0.96% monthly. Apply now.",
+            cibilScoreTitle: "Check your CIBIL score",
+            cibilScoreDesc: "See your credit score details.",
+            transactionHistoryTitle: "See Transaction History",
+            transactionHistoryDesc: "View your past transactions.",
+            bankBalanceTitle: "Check Bank Balance",
+            bankBalanceDesc: "View your account balance.",
+            rewardsTitle: "Rewards",
+            rewardsDesc: "View your earned rewards.",
+            offersNewTitle: "Offers",
+            offersNewDesc: "Check exciting offers.",
+            referralsTitle: "Referrals",
+            referralsDesc: "Refer and earn money.",
+            billsRechargesTitle: "Bills & Recharges",
+            jioHotstarTitle: "JioHotstar",
+            jioHotstarDesc: "Book Now",
+            indaneGasTitle: "Indane Gas",
+            indaneGasDesc: "Book Now",
+            tnElectricityTitle: "TN Electricity",
+            tnElectricityDesc: "Pay Due Bill",
+            airtelTitle: "Airtel",
+            airtelDesc: "Get Data",
+            mobileRechargeTitle: "Mobile Recharge",
+            mobileRechargeDesc: "Recharge Now",
+            dthCableTvTitle: "DTH/Cable TV",
+            dthCableTvDesc: "View plans",
+            electricityTitle: "Electricity",
+            electricityDesc: "Pay Bill",
+            licInsuranceTitle: "LIC / Insurance",
+            licInsuranceDesc: "Pay Premium",
+            viewAllBtn: "View All",
+            businessesTitle: "Businesses",
+            exploreTitle: "Explore",
+            exploreDesc: "Explore our business services.",
+            darkModeLabel: "Dark Mode",
+            darkModeAlert: "Dark Mode is only available in Normal View. Please switch to Normal mode to use it.",
+            voiceAssistantActivated: "Voice assistant activated. Tap on any text or button to hear it read aloud.",
+            voiceAssistantDeactivated: "Voice assistant deactivated.",
+            noContentToRead: "No content to read aloud for this element.",
+            chatbotWelcome: "Hello! I'm your AI banking assistant. How can I help you today?",
+            chatbotHelp: "I can help with common banking queries like checking balance, recent transactions, or finding offers. What would you like to know?",
+            chatbotBalance: "To check your balance, please navigate to the 'User Information' section on the dashboard.",
+            chatbotTransactions: "You can view your recent transactions in the 'Transactions' section.",
+            chatbotOffers: "Exciting offers are available in the 'Offers' section, both on the main dashboard and under 'Manage Your Money'.",
+            chatbotLoans: "Information about your loans can be found in the 'Loans' section.",
+            chatbotGeneral: "I'm sorry, I can only assist with banking-related queries. Can you please rephrase your question?",
+            chatbotGreeting: "Hello there! How can I assist you with your banking needs?",
+            chatbotFarewell: "Goodbye! Have a great day.",
+            chatbotThanks: "You're welcome! Is there anything else I can help you with?",
+            chatbotUnavailable: "I'm sorry, I am currently unable to process that request.",
+            chatInputPlaceholder: "Type your message...",
+            chatSendButton: "Send",
+            voiceGenderLabel: "Voice Gender",
+            voiceGenderDefault: "Default",
+            voiceGenderMale: "Male",
+            voiceGenderFemale: "Female"
+        },
+        ta: {
+            appTitle: "ஸ்மார்ட்பேங்க் ",
+            greeting: "வணக்கம், ஜான் டோ ",
+            balanceLabel: "தற்போதைய இருப்பு",
+            userBalance: "₹ 75,000.00 ",
+            reminderTitle: "📅 நினைவூட்டல்கள்",
+            reminderList: [
+                "கடன் அட்டை பில் 3 நாட்களில் வருவதற்கு உள்ளது 🕒",
+                "நிவேச நிலுவை 25 மே அன்று 📈",
+                "காப்பீடு புதுப்பிப்பு அடுத்த வாரம் �️"
+            ],
+            offersTitle: "🎁 சலுகைகள்",
+            offer1Title: "ஷாப்பிங் Cashback",
+            offer1Desc: "அடுத்த 3 கொள்முதல்களில் 5% Cashback பெறுங்கள்",
+            offer2Title: "கடன் முன்கூட்டியே அனுமதி",
+            offer2Desc: "விரைவில் அனுமதி பெற இப்போது விண்ணப்பியுங்கள்",
+            loansTitle: "💳 கடன்கள்",
+            loan1Type: "வீட்டு கடன்",
+            loan1Due: "காலாவதி தேதி: 15 ஜூன் 2025",
+            loan1Amount: "₹ 5,00,000",
+            loan2Type: "கார் கடன்",
+            loan2Due: "காலாவதி தேதி: 30 ஜூலை 2025",
+            loan2Amount: "₹ 2,00,000",
+            transactionsTitle: "💸 பரிவர்த்தனைகள்",
+            transactions: [
+                { desc: "கிராசரி கடை", date: "மே 14, 2025", amount: "-₹800", color: "negative" },
+                { desc: "சம்பளம் சேர்க்கப்பட்டது", date: "மே 10, 2025", amount: "+₹5,000", color: "positive" },
+                { desc: "உபர் சவாரி", date: "மே 9, 2025", amount: "-₹1,200", color: "negative" },
+                { desc: "மின்சார பில்", date: "மே 5, 2025", amount: "-₹3,000", color: "negative" }
+            ],
+            manageMoneyTitle: "உங்கள் பணத்தை நிர்வகிக்கவும்",
+            goldLoanTitle: "தங்கக் கடன்",
+            goldLoanDesc: "மாதாந்திர 0.96% வட்டி விகிதத்தில் தொடங்குகிறது. இப்போதே விண்ணப்பிக்கவும்.",
+            cibilScoreTitle: "உங்கள் CIBIL ஸ்கோரை சரிபார்க்கவும்",
+            cibilScoreDesc: "உங்கள் கடன் ஸ்கோர் விவரங்களைக் காண்க.",
+            transactionHistoryTitle: "பரிவர்த்தனை வரலாற்றைக் காண்க",
+            transactionHistoryDesc: "உங்கள் கடந்தகால பரிவர்த்தனைகளைக் காண்க.",
+            bankBalanceTitle: "வங்கி இருப்பை சரிபார்க்கவும்",
+            bankBalanceDesc: "உங்கள் கணக்கு இருப்பைக் காண்க.",
+            rewardsTitle: "வெகுமதிகள்",
+            rewardsDesc: "நீங்கள் பெற்ற வெகுமதிகளைக் காண்க.",
+            offersNewTitle: "சலுகைகள்",
+            offersNewDesc: "அற்புதமான சலுகைகளை சரிபார்க்கவும்.",
+            referralsTitle: "பரிந்துரைகள்",
+            referralsDesc: "பரிந்துரைத்து பணம் சம்பாதிக்கவும்.",
+            billsRechargesTitle: "பில்கள் & ரீசார்ஜ்கள்",
+            jioHotstarTitle: "ஜியோ ஹாட்ஸ்டார்",
+            jioHotstarDesc: "இப்போதே பதிவு செய்யவும்",
+            indaneGasTitle: "இண்டேன் எரிவாயு",
+            indaneGasDesc: "இப்போதே பதிவு செய்யவும்",
+            tnElectricityTitle: "தமிழ்நாடு மின்சாரம்",
+            tnElectricityDesc: "நிலுவைப் பில்லை செலுத்தவும்",
+            airtelTitle: "ஏர்டெல்",
+            airtelDesc: "டேட்டாவைப் பெறுங்கள்",
+            mobileRechargeTitle: "மொபைல் ரீசார்ஜ்",
+            mobileRechargeDesc: "இப்போதே ரீசார்ஜ் செய்யவும்",
+            dthCableTvTitle: "டிடிஎச்/கேபிள் டிவி",
+            dthCableTvDesc: "திட்டங்களைக் காண்க",
+            electricityTitle: "மின்சாரம்",
+            electricityDesc: "பில்லை செலுத்தவும்",
+            licInsuranceTitle: "எல்ஐசி / காப்பீடு",
+            licInsuranceDesc: "பிரீமியம் செலுத்தவும்",
+            viewAllBtn: "அனைத்தையும் காண்க",
+            businessesTitle: "வணிகங்கள்",
+            exploreTitle: "ஆராயவும்",
+            exploreDesc: "எங்கள் வணிக சேவைகளை ஆராயவும்.",
+            darkModeLabel: "இருண்ட பயன்முறை",
+            darkModeAlert: "இருண்ட பயன்முறை சாதாரண காட்சியில் மட்டுமே கிடைக்கும். அதைப் பயன்படுத்த சாதாரண பயன்முறைக்கு மாறவும்.",
+            voiceAssistantActivated: "குரல் உதவியாளர் செயல்படுத்தப்பட்டது. உரையை அல்லது பொத்தானை தட்டி கேட்கவும்.",
+            voiceAssistantDeactivated: "குரல் உதவியாளர் செயலிழக்கப்பட்டது.",
+            noContentToRead: "இந்த உறுப்புக்கு உள்ளடக்கத்தைப் படிக்க எதுவும் இல்லை.",
+            chatbotWelcome: "வணக்கம்! நான் உங்கள் AI வங்கி உதவியாளர். இன்று நான் உங்களுக்கு எப்படி உதவ முடியும்?",
+            chatbotHelp: "இருப்பு சரிபார்த்தல், சமீபத்திய பரிவர்த்தனைகள் அல்லது சலுகைகளைக் கண்டறிதல் போன்ற பொதுவான வங்கி கேள்விகளுக்கு நான் உதவ முடியும். நீங்கள் என்ன தெரிந்து கொள்ள விரும்புகிறீர்கள்?",
+            chatbotBalance: "உங்கள் இருப்பைச் சரிபார்க்க, டாஷ்போர்டில் உள்ள 'பயனர் தகவல்' பகுதிக்குச் செல்லவும்.",
+            chatbotTransactions: "உங்கள் சமீபத்திய பரிவர்த்தனைகளை 'பரிவர்த்தனைகள்' பகுதியில் காணலாம்.",
+            chatbotOffers: "டாஷ்போர்டிலும் 'உங்கள் பணத்தை நிர்வகிக்கவும்' பகுதியிலும் அற்புதமான சலுகைகள் உள்ளன.",
+            chatbotLoans: "உங்கள் கடன்கள் பற்றிய தகவல்களை 'கடன்கள்' பகுதியில் காணலாம்.",
+            chatbotGeneral: "மன்னிக்கவும், நான் வங்கி தொடர்பான கேள்விகளுக்கு மட்டுமே உதவ முடியும். உங்கள் கேள்வியை மீண்டும் கூற முடியுமா?",
+            chatbotGreeting: "வணக்கம்! உங்கள் வங்கித் தேவைகளுக்கு நான் எப்படி உதவ முடியும்?",
+            chatbotFarewell: "விடைபெறுகிறேன்! ஒரு சிறந்த நாள் அமையட்டும்.",
+            chatbotThanks: "வரவேற்கிறோம்! வேறு ஏதாவது உதவி வேண்டுமா?",
+            chatbotUnavailable: "மன்னிக்கவும், நான் தற்போது அந்த கோரிக்கையை செயலாக்க முடியவில்லை.",
+            chatInputPlaceholder: "உங்கள் செய்தியை தட்டச்சு செய்யவும்...",
+            chatSendButton: "அனுப்பு",
+            voiceGenderLabel: "குரல் பாலினம்",
+            voiceGenderDefault: "இயல்புநிலை",
+            voiceGenderMale: "ஆண்",
+            voiceGenderFemale: "பெண்"
+        },
+        ml: {
+            appTitle: "സ്മാർട്ട്‌ബാങ്ക് ",
+            greeting: "നമസ്കാരം, ജോൺ ഡോ ",
+            balanceLabel: "നിലവിലെ ബാലൻസ്",
+            userBalance: "₹ 75,000.00 ",
+            reminderTitle: "📅 ഓർമപ്പെടുത്തലുകൾ",
+            reminderList: [
+                "ക്രെഡിറ്റ് കാർഡ് ബിൽ 3 ദിവസങ്ങളിൽ എത്തും 🕒",
+                "നിക്ഷേപം 25 മേയ് 2025 ന് മച്ചുറ്റും 📈",
+                "ഇൻഷുറൻസ് പുതുക്കൽ അടുത്താഴ്ച 🛡️"
+            ],
+            offersTitle: "🎁 ഓഫറുകൾ",
+            offer1Title: "ഷോപ്പിങ്ങിൽ Cashback",
+            offer1Desc: "അടുത്ത 3 വാങ്ങലുകളിൽ 5% Cashback നേടുക",
+            offer2Title: "ലോൺ മുൻകൂർ അംഗീകാരം",
+            offer2Desc: "വേഗത്തിൽ അംഗീകാരം നേടാൻ ഇപ്പോൾ അപേക്ഷിക്കുക",
+            loansTitle: "💳 ലോൺകൾ",
+            loan1Type: "ഹോം ലോൺ",
+            loan1Due: "അവസാന തീയതി: 15 ജൂൺ 2025",
+            loan1Amount: "₹ 5,00,000",
+            loan2Type: "കാർ ലോൺ",
+            loan2Due: "അവസാന തീയതി: 30 ജൂലൈ 2025",
+            loan2Amount: "₹ 2,00,000",
+            transactionsTitle: "💸 ട്രാൻസാക്ഷനുകൾ",
+            transactions: [
+                { desc: "ഗ്രോസറി സ്റ്റോർ", date: "മേയ് 14, 2025", amount: "-₹800", color: "negative" },
+                { desc: "ശമ്പളം ചേർന്നു", date: "മേയ് 10, 2025", amount: "+₹5,000", color: "positive" },
+                { desc: "ഉബർ റൈഡ്", date: "മേയ് 9, 2025", amount: "-₹1,200", color: "negative" },
+                { desc: "ഇലക്ട്രിസിറ്റി ബിൽ", date: "മേയ് 5, 2025", amount: "-₹3,000", color: "negative" }
+            ],
+            manageMoneyTitle: "നിങ്ങളുടെ പണം കൈകാര്യം ചെയ്യുക",
+            goldLoanTitle: "ഗോൾഡ് ലോൺ",
+            goldLoanDesc: "പ്രതിമാസം 0.96% പലിശ നിരക്കിൽ ആരംഭിക്കുന്നു. ഇപ്പോൾ അപേക്ഷിക്കുക.",
+            cibilScoreTitle: "നിങ്ങളുടെ CIBIL സ്കോർ പരിശോധിക്കുക",
+            cibilScoreDesc: "നിങ്ങളുടെ ക്രെഡിറ്റ് സ്കോർ വിവരങ്ങൾ കാണുക.",
+            transactionHistoryTitle: "ട്രാൻസാക്ഷൻ ചരിത്രം കാണുക",
+            transactionHistoryDesc: "നിങ്ങളുടെ മുൻകാല ട്രാൻസാക്ഷനുകൾ കാണുക.",
+            bankBalanceTitle: "ബാങ്ക് ബാലൻസ് പരിശോധിക്കുക",
+            bankBalanceDesc: "നിങ്ങളുടെ അക്കൗണ്ട് ബാലൻസ് കാണുക.",
+            rewardsTitle: "റിവാർഡുകൾ",
+            rewardsDesc: "നിങ്ങൾ നേടിയ റിവാർഡുകൾ കാണുക.",
+            offersNewTitle: "ഓഫറുകൾ",
+            offersNewDesc: "ആകർഷകമായ ഓഫറുകൾ പരിശോധിക്കുക.",
+            referralsTitle: "റഫറലുകൾ",
+            referralsDesc: "റഫർ ചെയ്ത് പണം നേടുക.",
+            billsRechargesTitle: "ബില്ലുകളും റീചാർജുകളും",
+            jioHotstarTitle: "ജിയോ ഹോട്ട്സ്റ്റാർ",
+            jioHotstarDesc: "ഇപ്പോൾ ബുക്ക് ചെയ്യുക",
+            indaneGasTitle: "ഇൻഡേൻ ഗ്യാസ്",
+            indaneGasDesc: "ഇപ്പോൾ ബുക്ക് ചെയ്യുക",
+            tnElectricityTitle: "തമിഴ്നാട് വൈദ്യുതി",
+            tnElectricityDesc: "കുടിശ്ശിക ബിൽ അടയ്ക്കുക",
+            airtelTitle: "എയർടെൽ",
+            airtelDesc: "ഡാറ്റ നേടുക",
+            mobileRechargeTitle: "മൊബൈൽ റീചാർജ്",
+            mobileRechargeDesc: "ഇപ്പോൾ റീചാർജ് ചെയ്യുക",
+            dthCableTvTitle: "ഡിടിഎച്ച്/കേബിൾ ടിവി",
+            dthCableTvDesc: "പ്ലാനുകൾ കാണുക",
+            electricityTitle: "വൈദ്യുതി",
+            electricityDesc: "ബിൽ അടയ്ക്കുക",
+            licInsuranceTitle: "എൽഐസി / ഇൻഷുറൻസ്",
+            licInsuranceDesc: "പ്രീമിയം അടയ്ക്കുക",
+            viewAllBtn: "എല്ലാം കാണുക",
+            businessesTitle: "ബിസിനസുകൾ",
+            exploreTitle: "പര്യവേക്ഷണം ചെയ്യുക",
+            exploreDesc: "ഞങ്ങളുടെ ബിസിനസ്സ് സേവനങ്ങൾ പര്യവേക്ഷണം ചെയ്യുക.",
+            darkModeLabel: "ഡാർക്ക് മോഡ്",
+            darkModeAlert: "ഡാർക്ക് മോഡ് സാധാരണ കാഴ്ചയിൽ മാത്രമേ ലഭ്യമാകൂ. ഇത് ഉപയോഗിക്കാൻ സാധാരണ മോഡിലേക്ക് മാറുക.",
+            voiceAssistantActivated: "വോയിസ് അസിസ്റ്റന്റ് സജീവമാക്കി. വായിക്കാൻ ഏതെങ്കിലും ടെക്സ്റ്റിലോ ബട്ടണിലോ ടാപ്പ് ചെയ്യുക.",
+            voiceAssistantDeactivated: "വോയിസ് അസിസ്റ്റന്റ് നിർജ്ജീവമാക്കി.",
+            noContentToRead: "ഈ ഘടകത്തിന് വായിക്കാൻ ഉള്ളടക്കമൊന്നുമില്ല.",
+            chatbotWelcome: "നമസ്കാരം! ഞാൻ നിങ്ങളുടെ AI ബാങ്കിംഗ് അസിസ്റ്റന്റ് ആണ്. ഇന്ന് ഞാൻ നിങ്ങളെ എങ്ങനെ സഹായിക്കും?",
+            chatbotHelp: "ബാലൻസ് പരിശോധിക്കുക, സമീപകാല ട്രാൻസാക്ഷനുകൾ, അല്ലെങ്കിൽ ഓഫറുകൾ കണ്ടെത്തുക തുടങ്ങിയ സാധാരണ ബാങ്കിംഗ് ചോദ്യങ്ങളിൽ എനിക്ക് സഹായിക്കാൻ കഴിയും. നിങ്ങൾക്ക് എന്ത് അറിയാനാണ് താൽപര്യം?",
+            chatbotBalance: "നിങ്ങളുടെ ബാലൻസ് പരിശോധിക്കാൻ, ഡാഷ്ബോർഡിലെ 'ഉപയോക്തൃ വിവരങ്ങൾ' വിഭാഗത്തിലേക്ക് പോകുക.",
+            chatbotTransactions: "'ട്രാൻസാക്ഷനുകൾ' വിഭാഗത്തിൽ നിങ്ങളുടെ സമീപകാല ട്രാൻസാക്ഷനുകൾ കാണാൻ കഴിയും.",
+            chatbotOffers: "ഡാഷ്ബോർഡിലും 'നിങ്ങളുടെ പണം കൈകാര്യം ചെയ്യുക' എന്ന വിഭാഗത്തിലും ആകർഷകമായ ഓഫറുകൾ ലഭ്യമാണ്.",
+            chatbotLoans: "നിങ്ങളുടെ ലോണുകളെക്കുറിച്ചുള്ള വിവരങ്ങൾ 'ലോൺകൾ' വിഭാഗത്തിൽ കാണാം.",
+            chatbotGeneral: "ക്ഷമിക്കണം, ബാങ്കിംഗ് സംബന്ധമായ ചോദ്യങ്ങളിൽ മാത്രമേ എനിക്ക് സഹായിക്കാൻ കഴിയൂ. നിങ്ങളുടെ ചോദ്യം വീണ്ടും പറയാമോ?",
+            chatbotGreeting: "നമസ്കാരം! നിങ്ങളുടെ ബാങ്കിംഗ് ആവശ്യങ്ങളിൽ ഞാൻ എങ്ങനെ സഹായിക്കും?",
+            chatbotFarewell: "വിട! നല്ലൊരു ദിവസം ആശംസിക്കുന്നു.",
+            chatbotThanks: "നിങ്ങൾക്ക് സ്വാഗതം! മറ്റെന്തെങ്കിലും സഹായം ആവശ്യമുണ്ടോ?",
+            chatbotUnavailable: "ക്ഷമിക്കണം, എനിക്ക് നിലവിൽ ആ അഭ്യർത്ഥന പ്രോസസ്സ് ചെയ്യാൻ കഴിയില്ല.",
+            chatInputPlaceholder: "നിങ്ങളുടെ സന്ദേശം ടൈപ്പ് ചെയ്യുക...",
+            chatSendButton: "അയയ്ക്കുക",
+            voiceGenderLabel: "വോയിസ് ലിംഗഭേദം",
+            voiceGenderDefault: "സ്ഥിരസ്ഥിതി",
+            voiceGenderMale: "പുരുഷൻ",
+            voiceGenderFemale: "സ്ത്രീ"
+        },
+        te: {
+            appTitle: "స్మార్ట్‌బ్యాంక్ ",
+            greeting: "హలో, జాన్ డో ",
+            balanceLabel: "ప్రస్తుత బ్యాలెన్స్",
+            userBalance: "₹ 75,000.00 ",
+            reminderTitle: "📅 రిమైండర్లు",
+            reminderList: [
+                "క్రెడిట్ కార్డ్ బిల్లు 3 రోజుల్లో బాకీ ఉంది 🕒",
+                "ఇన్వెస్ట్‌మెంట్ 25 మే 2025న ముగుస్తుంది 📈",
+                "ఇన్సూరెన్స్ రీన్యూవల్ వారం తర్వాత 🛡️"
+            ],
+            offersTitle: "🎁 ఆఫర్లు",
+            offer1Title: "షాపింగ్ పై Cashback",
+            offer1Desc: "తదుపరి 3 కొనుగోలులపై 5% Cashback పొందండి",
+            offer2Title: "లోన్ ప్రీ-అప్రూవల్",
+            offer2Desc: "త్వరగా అప్రూవల్ కోసం ఇప్పుడు అప్లై చేయండి",
+            loansTitle: "💳 లోన్లు",
+            loan1Type: "హోమ్ లోన్",
+            loan1Due: "గడువు తేది: 15 జూన్ 2025",
+            loan1Amount: "₹ 5,00,000",
+            loan2Type: "కార్ లోన్",
+            loan2Due: "గడువు తేది: 30 జూలై 2025",
+            loan2Amount: "₹ 2,00,000",
+            transactionsTitle: "💸 లావాదేవీలు",
+            transactions: [
+                { desc: "గ్రోసరీ స్టోర్", date: "మే 14, 2025", amount: "-₹800", color: "negative" },
+                { desc: "జీతం జమైంది", date: "మే 10, 2025", amount: "+₹5,000", color: "positive" },
+                { desc: "ఉబెర్ రైడ్", date: "మే 9, 2025", amount: "-₹1,200", color: "negative" },
+                { desc: "ఎలక్ట్రిసిటీ బిల్", date: "మే 5, 2025", amount: "-₹3,000", color: "negative" }
+            ],
+            manageMoneyTitle: "మీ డబ్బును నిర్వహించండి",
+            goldLoanTitle: "బంగారు రుణం",
+            goldLoanDesc: "నెలవారీ 0.96% వడ్డీ రేటుతో ప్రారంభమవుతుంది. ఇప్పుడే దరఖాస్తు చేయండి.",
+            cibilScoreTitle: "మీ CIBIL స్కోర్‌ను తనిఖీ చేయండి",
+            cibilScoreDesc: "మీ క్రెడిట్ స్కోర్ వివరాలను చూడండి.",
+            transactionHistoryTitle: "లావాదేవీల చరిత్రను చూడండి",
+            transactionHistoryDesc: "మీ గత లావాదేవీలను చూడండి.",
+            bankBalanceTitle: "బ్యాంకు బ్యాలెన్స్ తనిఖీ చేయండి",
+            bankBalanceDesc: "మీ ఖాతా బ్యాలెన్స్‌ను చూడండి.",
+            rewardsTitle: "రివార్డులు",
+            rewardsDesc: "మీరు సంపాదించిన రివార్డులను చూడండి.",
+            offersNewTitle: "ఆఫర్లు",
+            offersNewDesc: "ఆకర్షణీయమైన ఆఫర్‌లను తనిఖీ చేయండి.",
+            referralsTitle: "రెఫరల్స్",
+            referralsDesc: "రెఫర్ చేసి డబ్బు సంపాదించండి.",
+            billsRechargesTitle: "బిల్లులు & రీఛార్జ్‌లు",
+            jioHotstarTitle: "జియో హాట్‌స్టార్",
+            jioHotstarDesc: "ఇప్పుడే బుక్ చేయండి",
+            indaneGasTitle: "ఇండేన్ గ్యాస్",
+            indaneGasDesc: "ఇప్పుడే బుక్ చేయండి",
+            tnElectricityTitle: "తమిళనాడు విద్యుత్",
+            tnElectricityDesc: "బకాయి బిల్లు చెల్లించండి",
+            airtelTitle: "ఎయిర్‌టెల్",
+            airtelDesc: "డేటాను పొందండి",
+            mobileRechargeTitle: "మొబైల్ రీఛార్జ్",
+            mobileRechargeDesc: "ఇప్పుడే రీఛార్జ్ చేయండి",
+            dthCableTvTitle: "డిటిహెచ్/కేబుల్ టీవీ",
+            dthCableTvDesc: "ప్లాన్‌లను చూడండి",
+            electricityTitle: "విద్యుత్",
+            electricityDesc: "బిల్లు చెల్లించండి",
+            licInsuranceTitle: "ఎల్ఐసి / బీమా",
+            licInsuranceDesc: "ప్రీమియం చెల్లించండి",
+            viewAllBtn: "అన్నింటినీ చూడండి",
+            businessesTitle: "వ్యాపారాలు",
+            exploreTitle: "అన్వేషించండి",
+            exploreDesc: "మా వ్యాపార సేవలను అన్వేషించండి.",
+            darkModeLabel: "డార్క్ మోడ్",
+            darkModeAlert: "డార్క్ మోడ్ సాధారణ వీక్షణలో మాత్రమే అందుబాటులో ఉంటుంది. దాన్ని ఉపయోగించడానికి దయచేసి సాధారణ మోడ్‌కు మారండి.",
+            voiceAssistantActivated: "వాయిస్ అసిస్టెంట్ సక్రియం చేయబడింది. చదవడానికి ఏదైనా టెక్స్ట్ లేదా బటన్‌పై నొక్కండి.",
+            voiceAssistantDeactivated: "వాయిస్ అసిస్టెంట్ నిష్క్రియం చేయబడింది.",
+            noContentToRead: "ఈ మూలకానికి చదవడానికి కంటెంట్ లేదు.",
+            chatbotWelcome: "నమస్కారం! నేను మీ AI బ్యాంకింగ్ అసిస్టెంట్. ఈరోజు నేను మీకు ఎలా సహాయం చేయగలను?",
+            chatbotHelp: "బ్యాలెన్స్ తనిఖీ, ఇటీవలి లావాదేవీలు లేదా ఆఫర్‌లను కనుగొనడం వంటి సాధారణ బ్యాంకింగ్ ప్రశ్నలతో నేను సహాయం చేయగలను. మీరు ఏమి తెలుసుకోవాలనుకుంటున్నారు?",
+            chatbotBalance: "మీ బ్యాలెన్స్ తనిఖీ చేయడానికి, దయచేసి డాష్‌బోర్డ్‌లోని 'వినియోగదారు సమాచారం' విభాగానికి వెళ్లండి.",
+            chatbotTransactions: "'లావాదేవీలు' విభాగంలో మీ ఇటీవలి లావాదేవీలను చూడవచ్చు.",
+            chatbotOffers: "డాష్‌బోర్డ్‌లో మరియు 'మీ డబ్బును నిర్వహించండి' విభాగంలో అద్భుతమైన ఆఫర్‌లు అందుబాటులో ఉన్నాయి.",
+            chatbotLoans: "మీ రుణాల గురించిన సమాచారం 'రుణాలు' విభాగంలో చూడవచ్చు.",
+            chatbotGeneral: "క్షమించండి, నేను బ్యాంకింగ్ సంబంధిత ప్రశ్నలకు మాత్రమే సహాయం చేయగలను. దయచేచేసి మీ ప్రశ్నను తిరిగి చెప్పగలరా?",
+            chatbotGreeting: "నమస్కారం! మీ బ్యాంకింగ్ అవసరాలకు నేను ఎలా సహాయం చేయగలను?",
+            chatbotFarewell: "శుభం! మీకు మంచి రోజు కావాలని కోరుకుంటున్నాను.",
+            chatbotThanks: "మీకు స్వాగతం! నేను మీకు ఇంకేమైనా సహాయం చేయగలనా?",
+            chatbotUnavailable: "క్షమించండి, నేను ప్రస్తుతం ఆ అభ్యర్థనను ప్రాసెస్ చేయలేకపోతున్నాను.",
+            chatInputPlaceholder: "మీ సందేశాన్ని టైప్ చేయండి...",
+            chatSendButton: "పంపండి",
+            voiceGenderLabel: "వాయిస్ లింగం",
+            voiceGenderDefault: "డిఫాల్ట్",
+            voiceGenderMale: "పురుషుడు",
+            voiceGenderFemale: "స్త్రీ"
+        }
+    };
+
+    const modeSelect = document.getElementById("modeSelect");
+    const languageSelect = document.getElementById("languageSelect");
+    const body = document.body;
+    const voiceAssistantBtn = document.getElementById("voiceAssistantBtn");
+    const chatBotBtn = document.getElementById("chatBotBtn");
+    const chatModal = document.getElementById("chatModal");
+    const closeChatBtn = document.getElementById("closeChatBtn");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatInput = document.getElementById("chatInput");
+    const sendChatBtn = document.getElementById("sendChatBtn");
+    const sideMenuCloseBtn = document.getElementById('side-menu-close-btn'); // New close button for side menu
+    const profileImage = document.getElementById('profile-image').querySelector('img');
+    const profileImageUpload = document.getElementById('profileImageUpload');
+    const genderSelect = document.getElementById('genderSelect');
+    const profileNameDisplay = document.getElementById('profile-name'); // The div that displays the name
+    
+    // Balance toggle and PIN verification elements
+    const userBalance = document.getElementById('userBalance');
+    const toggleBalanceIcon = document.getElementById('toggleBalanceIcon');
+    const upiPinModal = document.getElementById('upiPinModal');
+    const upiPinInput = document.getElementById('upiPinInput');
+    const verifyUpiPinBtn = document.getElementById('verifyUpiPinBtn');
+    const upiPinCloseBtn = document.getElementById('upiPinCloseBtn');
+    
+    // Balance toggle variables
+    let balanceVisible = false;
+    let hideBalanceTimeout;
+    const correctUpiPin = "1234"; // Example PIN
+    let actualBalance = "₹ 75,000.00 "; // The actual balance to show after verification
+
+    // Elements to translate (updated to include new sections and chatbot strings)
+    const elementsToTranslate = {
+        appTitle: document.getElementById("appTitle"),
+        greeting: document.getElementById("greeting"),
+        balanceLabel: document.getElementById("balanceLabel"),
+        userBalance: document.getElementById("userBalance"),
+        reminderTitle: document.getElementById("reminderTitle"),
+        offersTitle: document.getElementById("offersTitle"),
+        offer1Title: document.getElementById("offer1Title"),
+        offer1Desc: document.getElementById("offer1Desc"),
+        offer2Title: document.getElementById("offer2Title"),
+        offer2Desc: document.getElementById("offer2Desc"),
+        loansTitle: document.getElementById("loansTitle"),
+        loan1Type: document.getElementById("loan1Type"),
+        loan1Due: document.getElementById("loan1Due"),
+        loan1Amount: document.getElementById("loan1Amount"),
+        loan2Type: document.getElementById("loan2Type"),
+        loan2Due: document.getElementById("loan2Due"),
+        loan2Amount: document.getElementById("loan2Amount"),
+        transactionsTitle: document.getElementById("transactionsTitle"),
+        reminderList: document.getElementById("reminderList"),
+        transactionList: document.getElementById("transactionList"),
+        // New elements from MyBank
+        manageMoneyTitle: document.querySelector('section:nth-of-type(6) .section-title'),
+        goldLoanTitle: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(1) .feature-title'),
+        goldLoanDesc: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(1) .feature-description'),
+        cibilScoreTitle: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(2) .feature-title'),
+        cibilScoreDesc: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(2) .feature-description'),
+        transactionHistoryTitle: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(3) .feature-title'),
+        transactionHistoryDesc: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(3) .feature-description'),
+        bankBalanceTitle: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(4) .feature-title'),
+        bankBalanceDesc: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(4) .feature-description'),
+        rewardsTitle: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(5) .feature-title'),
+        rewardsDesc: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(5) .feature-description'),
+        offersNewTitle: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(6) .feature-title'),
+        offersNewDesc: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(6) .feature-description'),
+        referralsTitle: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(7) .feature-title'),
+        referralsDesc: document.querySelector('section:nth-of-type(6) .feature-box:nth-of-type(7) .feature-description'),
+
+        billsRechargesTitle: document.querySelector('section:nth-of-type(7) .section-title'),
+        jioHotstarTitle: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(1) .feature-title'),
+        jioHotstarDesc: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(1) .feature-description'),
+        indaneGasTitle: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(2) .feature-title'),
+        indaneGasDesc: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(2) .feature-description'),
+        tnElectricityTitle: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(3) .feature-title'),
+        tnElectricityDesc: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(3) .feature-description'),
+        airtelTitle: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(4) .feature-title'),
+        airtelDesc: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(4) .feature-description'),
+        mobileRechargeTitle: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(5) .feature-title'),
+        mobileRechargeDesc: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(5) .feature-description'),
+        dthCableTvTitle: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(6) .feature-title'),
+        dthCableTvDesc: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(6) .feature-description'),
+        electricityTitle: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(7) .feature-title'),
+        electricityDesc: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(7) .feature-description'),
+        licInsuranceTitle: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(8) .feature-title'),
+        licInsuranceDesc: document.querySelector('section:nth-of-type(7) .feature-box:nth-of-type(8) .feature-description'),
+        viewAllBtn: document.querySelector('section:nth-of-type(7) .mt-6 button'),
+
+        businessesTitle: document.querySelector('section:nth-of-type(8) .section-title'),
+        exploreTitle: document.querySelector('section:nth-of-type(8) .feature-box:nth-of-type(1) .feature-title'),
+        exploreDesc: document.querySelector('section:nth-of-type(8) .feature-box:nth-of-type(1) .feature-description'),
+        darkModeLabel: document.querySelector('#dark-mode-toggle span'),
+        chatInputPlaceholder: document.getElementById('chatInput'),
+        chatSendButton: document.getElementById('sendChatBtn'),
+        voiceGenderLabel: document.querySelector('#voice-gender-select span'),
+        voiceGenderDefault: document.querySelector('#genderSelect option[value="default"]'),
+        voiceGenderMale: document.querySelector('#genderSelect option[value="male"]'),
+        voiceGenderFemale: document.querySelector('#genderSelect option[value="female"]')
+    };
+
+    // Update language content
+    function updateLanguage(lang) {
+        const tr = translations[lang] || translations.en;
+
+        // Static text
+        elementsToTranslate.appTitle.textContent = tr.appTitle;
+        elementsToTranslate.greeting.textContent = tr.greeting;
+        elementsToTranslate.balanceLabel.textContent = tr.balanceLabel;
+        // Don't update the visible balance display - keep it masked
+        // elementsToTranslate.userBalance.textContent = tr.userBalance;
+        
+        // Update the actual balance value for when PIN is verified
+        actualBalance = tr.userBalance;
+        elementsToTranslate.reminderTitle.textContent = tr.reminderTitle;
+        elementsToTranslate.offersTitle.textContent = tr.offersTitle;
+        elementsToTranslate.offer1Title.textContent = tr.offer1Title;
+        elementsToTranslate.offer1Desc.textContent = tr.offer1Desc;
+        elementsToTranslate.offer2Title.textContent = tr.offer2Title;
+        elementsToTranslate.offer2Desc.textContent = tr.offer2Desc;
+        elementsToTranslate.loansTitle.textContent = tr.loansTitle;
+        elementsToTranslate.loan1Type.textContent = tr.loan1Type;
+        elementsToTranslate.loan1Due.textContent = tr.loan1Due;
+        elementsToTranslate.loan1Amount.textContent = tr.loan1Amount;
+        elementsToTranslate.loan2Type.textContent = tr.loan2Type;
+        elementsToTranslate.loan2Due.textContent = tr.loan2Due;
+        elementsToTranslate.loan2Amount.textContent = tr.loan2Amount;
+        elementsToTranslate.transactionsTitle.textContent = tr.transactionsTitle;
+
+        // New sections
+        if (elementsToTranslate.manageMoneyTitle) elementsToTranslate.manageMoneyTitle.textContent = tr.manageMoneyTitle;
+        if (elementsToTranslate.goldLoanTitle) elementsToTranslate.goldLoanTitle.textContent = tr.goldLoanTitle;
+        if (elementsToTranslate.goldLoanDesc) elementsToTranslate.goldLoanDesc.textContent = tr.goldLoanDesc;
+        if (elementsToTranslate.cibilScoreTitle) elementsToTranslate.cibilScoreTitle.textContent = tr.cibilScoreTitle;
+        if (elementsToTranslate.cibilScoreDesc) elementsToTranslate.cibilScoreDesc.textContent = tr.cibilScoreDesc;
+        if (elementsToTranslate.transactionHistoryTitle) elementsToTranslate.transactionHistoryTitle.textContent = tr.transactionHistoryTitle;
+        if (elementsToTranslate.transactionHistoryDesc) elementsToTranslate.transactionHistoryDesc.textContent = tr.transactionHistoryDesc;
+        if (elementsToTranslate.bankBalanceTitle) elementsToTranslate.bankBalanceTitle.textContent = tr.bankBalanceTitle;
+        if (elementsToTranslate.bankBalanceDesc) elementsToTranslate.bankBalanceDesc.textContent = tr.bankBalanceDesc;
+        if (elementsToTranslate.rewardsTitle) elementsToTranslate.rewardsTitle.textContent = tr.rewardsTitle;
+        if (elementsToTranslate.rewardsDesc) elementsToTranslate.rewardsDesc.textContent = tr.rewardsDesc;
+        if (elementsToTranslate.offersNewTitle) elementsToTranslate.offersNewTitle.textContent = tr.offersNewTitle;
+        if (elementsToTranslate.offersNewDesc) elementsToTranslate.offersNewDesc.textContent = tr.offersNewDesc;
+        if (elementsToTranslate.referralsTitle) elementsToTranslate.referralsTitle.textContent = tr.referralsTitle;
+        if (elementsToTranslate.referralsDesc) elementsToTranslate.referralsDesc.textContent = tr.referralsDesc;
+
+        if (elementsToTranslate.billsRechargesTitle) elementsToTranslate.billsRechargesTitle.textContent = tr.billsRechargesTitle;
+        if (elementsToTranslate.jioHotstarTitle) elementsToTranslate.jioHotstarTitle.textContent = tr.jioHotstarTitle;
+        if (elementsToTranslate.jioHotstarDesc) elementsToTranslate.jioHotstarDesc.textContent = tr.jioHotstarDesc;
+        if (elementsToTranslate.indaneGasTitle) elementsToTranslate.indaneGasTitle.textContent = tr.indaneGasTitle;
+        if (elementsToTranslate.indaneGasDesc) elementsToTranslate.indaneGasDesc.textContent = tr.indaneGasDesc;
+        if (elementsToTranslate.tnElectricityTitle) elementsToTranslate.tnElectricityTitle.textContent = tr.tnElectricityTitle;
+        if (elementsToTranslate.tnElectricityDesc) elementsToTranslate.tnElectricityDesc.textContent = tr.tnElectricityDesc;
+        if (elementsToTranslate.airtelTitle) elementsToTranslate.airtelTitle.textContent = tr.airtelTitle;
+        if (elementsToTranslate.airtelDesc) elementsToTranslate.airtelDesc.textContent = tr.airtelDesc;
+        if (elementsToTranslate.mobileRechargeTitle) elementsToTranslate.mobileRechargeTitle.textContent = tr.mobileRechargeTitle;
+        if (elementsToTranslate.mobileRechargeDesc) elementsToTranslate.mobileRechargeDesc.textContent = tr.mobileRechargeDesc;
+        if (elementsToTranslate.dthCableTvTitle) elementsToTranslate.dthCableTvTitle.textContent = tr.dthCableTvTitle;
+        if (elementsToTranslate.dthCableTvDesc) elementsToTranslate.dthCableTvDesc.textContent = tr.dthCableTvDesc;
+        if (elementsToTranslate.electricityTitle) elementsToTranslate.electricityTitle.textContent = tr.electricityTitle;
+        if (elementsToTranslate.electricityDesc) elementsToTranslate.electricityDesc.textContent = tr.electricityDesc;
+        if (elementsToTranslate.licInsuranceTitle) elementsToTranslate.licInsuranceTitle.textContent = tr.licInsuranceTitle;
+        if (elementsToTranslate.licInsuranceDesc) elementsToTranslate.licInsuranceDesc.textContent = tr.licInsuranceDesc;
+        if (elementsToTranslate.viewAllBtn) elementsToTranslate.viewAllBtn.textContent = tr.viewAllBtn;
+
+        if (elementsToTranslate.businessesTitle) elementsToTranslate.businessesTitle.textContent = tr.businessesTitle;
+        if (elementsToTranslate.exploreTitle) elementsToTranslate.exploreTitle.textContent = tr.exploreTitle;
+        if (elementsToTranslate.exploreDesc) elementsToTranslate.exploreDesc.textContent = tr.exploreDesc;
+        if (elementsToTranslate.darkModeLabel) elementsToTranslate.darkModeLabel.textContent = tr.darkModeLabel;
+
+        // Chatbot specific translations
+        if (elementsToTranslate.chatInputPlaceholder) elementsToTranslate.chatInputPlaceholder.placeholder = tr.chatInputPlaceholder;
+        if (elementsToTranslate.chatSendButton) elementsToTranslate.chatSendButton.textContent = tr.chatSendButton;
+
+        // Voice Gender options
+        if (elementsToTranslate.voiceGenderLabel) elementsToTranslate.voiceGenderLabel.textContent = tr.voiceGenderLabel;
+        if (elementsToTranslate.voiceGenderDefault) elementsToTranslate.voiceGenderDefault.textContent = tr.voiceGenderDefault;
+        if (elementsToTranslate.voiceGenderMale) elementsToTranslate.voiceGenderMale.textContent = tr.voiceGenderMale;
+        if (elementsToTranslate.voiceGenderFemale) elementsToTranslate.voiceGenderFemale.textContent = tr.voiceGenderFemale;
+
+
+        // Reminders list
+        elementsToTranslate.reminderList.innerHTML = "";
+        tr.reminderList.forEach(reminder => {
+            const li = document.createElement("li");
+            li.textContent = reminder;
+            li.tabIndex = 0;
+            elementsToTranslate.reminderList.appendChild(li);
+        });
+
+        // Transactions list
+        elementsToTranslate.transactionList.innerHTML = "";
+        tr.transactions.forEach(tx => {
+            const li = document.createElement("li");
+            li.tabIndex = 0;
+            const leftDiv = document.createElement("div");
+            leftDiv.className = "left";
+
+            const titleSpan = document.createElement("span");
+            titleSpan.className = "title";
+            titleSpan.textContent = tx.desc;
+
+            const dateSpan = document.createElement("span");
+            dateSpan.className = "desc";
+            dateSpan.textContent = tx.date;
+
+            leftDiv.appendChild(titleSpan);
+            leftDiv.appendChild(dateSpan);
+
+            const amountSpan = document.createElement("span");
+            amountSpan.className = "amount " + tx.color;
+            amountSpan.textContent = tx.amount;
+
+            li.appendChild(leftDiv);
+            li.appendChild(amountSpan);
+
+            elementsToTranslate.transactionList.appendChild(li);
+        });
+    }
+
+    // --- SmartBank Mode Logic ---
+    let currentMode = "normal";
+    let isDarkModeActive = false; // State for the side menu dark mode toggle
+    let isVoiceAssistantActive = false; // State for voice assistant activation
+
+    function applyVoiceAssistantHighlighting(isActive) {
+        if (isActive) {
+            body.classList.add('voice-active');
+        } else {
+            body.classList.remove('voice-active');
+        }
+    }
+
+    function changeMode(mode) {
+        body.classList.remove("mode-normal", "mode-senior", "mode-visual", "dark-mode-active");
+        currentMode = mode; // Update current mode state
+
+        // Close side menu when changing mode
+        sideMenu.classList.remove('active');
+        sideMenuToggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>`;
+
+        // Deactivate voice assistant and dark mode when switching modes
+        synth.cancel(); // Stop any ongoing speech
+        isVoiceAssistantActive = false;
+        applyVoiceAssistantHighlighting(false); // Remove highlighting
+        darkModeSwitch.classList.remove('active');
+        darkModeSwitchCircle.classList.remove('active');
+
+        switch (mode) {
+            case "senior":
+                body.classList.add("mode-senior");
+                voiceAssistantBtn.style.display = "none";
+                break;
+            case "visual":
+                body.classList.add("mode-visual");
+                voiceAssistantBtn.style.display = "inline-flex"; // Use inline-flex for proper centering
+                break;
+            default: // Normal mode
+                body.classList.add("mode-normal");
+                voiceAssistantBtn.style.display = "none";
+                if (isDarkModeActive) { // Re-apply dark mode if it was active when leaving normal mode
+                    body.classList.add("dark-mode-active");
+                    darkModeSwitch.classList.add('active');
+                    darkModeSwitchCircle.classList.add('active');
+                }
+        }
+    }
+
+    modeSelect.addEventListener("change", (e) => {
+        changeMode(e.target.value);
+    });
+
+    languageSelect.addEventListener("change", (e) => {
+        updateLanguage(e.target.value);
+    });
+
+    // --- Side Menu & Dark Mode Toggle (from new code) ---
+    const sideMenu = document.getElementById('side-menu');
+    const sideMenuToggle = document.getElementById('side-menu-toggle');
+    const profileSection = document.getElementById('profile-section');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const darkModeSwitch = document.getElementById('dark-mode-switch');
+    const darkModeSwitchCircle = document.getElementById('dark-mode-switch-circle');
+    const navMenuItems = document.querySelectorAll('#nav-menu .nav-menu-item');
+
+    // Close side menu when close button is clicked
+    sideMenuCloseBtn.addEventListener('click', () => {
+        sideMenu.classList.remove('active');
+        sideMenuToggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>`;
+    });
+
+    sideMenuToggle.addEventListener('click', () => {
+        sideMenu.classList.toggle('active');
+        if (sideMenu.classList.contains('active')) {
+            sideMenuToggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>`;
+        } else {
+            sideMenuToggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>`;
+        }
+    });
+
+    // Handle profile image upload
+    profileSection.addEventListener('click', (event) => {
+        // Only trigger file input if the click was directly on the image or the profile section (not the name itself if it's an input)
+        if (event.target === profileImage || event.target.closest('#profile-image')) {
+            profileImageUpload.click();
+        }
+    });
+
+    profileImageUpload.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                profileImage.src = e.target.result;
+                console.log("Profile image updated:", e.target.result.substring(0, 50) + "..."); // Log a snippet of the data URL
+            };
+            reader.readAsDataURL(file);
+        } else {
+            console.log("No file selected for profile image.");
+        }
+    });
+
+    // Handle profile name editing
+    profileNameDisplay.addEventListener('click', () => {
+        // Check if it's already an input to prevent re-creating
+        if (profileNameDisplay.tagName === 'INPUT') {
+            return;
+        }
+
+        const currentName = profileNameDisplay.textContent;
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.value = currentName;
+        nameInput.id = 'profile-name-input'; // Add an ID for styling
+        nameInput.className = profileNameDisplay.className; // Keep existing classes for styling
+        profileNameDisplay.replaceWith(nameInput); // Replace the div with the input
+        nameInput.focus(); // Focus the input field
+        nameInput.select(); // Select all text in the input
+
+        const saveName = () => {
+            const newName = nameInput.value.trim();
+            if (newName && newName !== currentName) {
+                profileNameDisplay.textContent = newName;
+                // Update greeting on main dashboard
+                document.getElementById('greeting').textContent = `Hello, ${newName} 👋`;
+            } else {
+                profileNameDisplay.textContent = currentName; // Revert if empty or same
+            }
+            nameInput.replaceWith(profileNameDisplay); // Replace input back with div
+            // Re-attach event listener to the new div element
+            profileNameDisplay.addEventListener('click', arguments.callee);
+        };
+
+        nameInput.addEventListener('blur', saveName); // Save on blur
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                nameInput.blur(); // Trigger blur to save
+            }
+        });
+    });
+
+
+    navMenuItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            // Prevent default anchor behavior for demonstration
+            e.preventDefault();
+            // Close side menu after clicking a nav item (optional)
+            sideMenu.classList.remove('active');
+            sideMenuToggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>`;
+            alert(`${item.textContent.trim()} functionality not implemented yet.`);
+        });
+    });
+
+    darkModeToggle.addEventListener('click', () => {
+        console.log("Dark mode toggle clicked. Current mode:", currentMode);
+        // Only allow dark mode toggle if in normal mode
+        if (currentMode === 'normal') {
+            isDarkModeActive = !isDarkModeActive;
+            darkModeSwitch.classList.toggle('active');
+            darkModeSwitchCircle.classList.toggle('active');
+
+            if (isDarkModeActive) {
+                body.classList.add('dark-mode-active');
+                console.log("Dark mode activated.");
+            } else {
+                body.classList.remove('dark-mode-active');
+                console.log("Dark mode deactivated.");
+            }
+        } else {
+            alert(translations[languageSelect.value].darkModeAlert);
+            console.log("Dark mode alert shown: Not in normal mode.");
+        }
+    });
+
+    // --- Voice Assistant Logic (New Feature) ---
+    const synth = window.speechSynthesis;
+    let voices = [];
+
+    function populateVoiceList() {
+        voices = synth.getVoices();
+        console.log("Available voices:", voices.map(v => ({ name: v.name, lang: v.lang, gender: v.gender || 'unknown' })));
+        // Ensure voices are available before trying to select
+        if (voices.length === 0) {
+            console.warn("No speech synthesis voices found.");
+        }
+    }
+
+    // Populate voices when they are loaded
+    if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = populateVoiceList;
+    }
+    populateVoiceList(); // Call initially in case voices are already loaded
+
+    function getVoiceForLanguageAndGender(langCode, genderPreference) {
+        console.log(`Attempting to find voice for lang: ${langCode}, gender: ${genderPreference}`);
+        const filteredVoices = voices.filter(voice => voice.lang.startsWith(langCode));
+        console.log(`Found ${filteredVoices.length} voices for language ${langCode}:`, filteredVoices.map(v => v.name));
+
+        if (genderPreference === 'male') {
+            const maleVoice = filteredVoices.find(voice =>
+                voice.name.toLowerCase().includes('male') ||
+                voice.name.toLowerCase().includes('david') ||
+                (voice.gender && voice.gender === 'male')
+            );
+            if (maleVoice) {
+                console.log("Selected male voice:", maleVoice.name);
+                return maleVoice;
+            }
+        } else if (genderPreference === 'female') {
+            const femaleVoice = filteredVoices.find(voice =>
+                voice.name.toLowerCase().includes('female') ||
+                voice.name.toLowerCase().includes('zira') ||
+                voice.name.toLowerCase().includes('samantha') ||
+                (voice.gender && voice.gender === 'female')
+            );
+            if (femaleVoice) {
+                console.log("Selected female voice:", femaleVoice.name);
+                return femaleVoice;
+            }
+        }
+
+        // Fallback to any voice for the language if preferred gender not found
+        if (filteredVoices.length > 0) {
+            console.log("Selected default voice for language:", filteredVoices[0].name);
+            return filteredVoices[0];
+        }
+
+        // Fallback to any default voice if language-specific voice not found
+        if (voices.length > 0) {
+            console.log("Selected first available voice as fallback:", voices[0].name);
+            return voices[0];
+        }
+
+        console.warn("No suitable voice found at all.");
+        return null;
+    }
+
+    // Function to speak text
+    function speakText(text) {
+        if (!synth || !text) {
+            console.warn("Speech synthesis not available or no text to speak.");
+            return;
+        }
+        synth.cancel(); // Stop any ongoing speech
+
+        const selectedGender = genderSelect.value;
+        const currentLang = languageSelect.value;
+        const selectedVoice = getVoiceForLanguageAndGender(currentLang, selectedGender);
+
+        if (!selectedVoice) {
+            console.warn("No suitable voice found for the selected language and gender.");
+            // Optionally, speak a fallback message if no voice is found
+            alert("Speech synthesis voice not available for the selected language/gender.");
+            return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = currentLang;
+        utterance.voice = selectedVoice;
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        synth.speak(utterance);
+    }
+
+    // Event listener for gender selection
+    genderSelect.addEventListener('change', () => {
+        // When gender changes, if VA is active, speak a confirmation or re-read something
+        if (isVoiceAssistantActive && currentMode === 'visual') {
+            speakText(translations[languageSelect.value].voiceGenderLabel + " changed."); // Speak "Voice Gender changed"
+        }
+    });
+
+
+    // Elements that the voice assistant can read
+    const readableElementsSelectors = 'h1, h2, h3, p, span.title, span.desc, li, button:not(#voiceAssistantBtn):not(#chatBotBtn):not(#closeChatBtn):not(#sendChatBtn):not(#side-menu-close-btn)';
+    let readableElements = [];
+
+    function attachVoiceAssistantListeners() {
+        // Remove existing listeners first to prevent duplicates
+        readableElements.forEach(el => {
+            el.removeEventListener('click', handleReadableElementClick);
+            el.removeEventListener('touchstart', handleReadableElementClick); // For touch devices
+        });
+
+        // Find all readable elements in the main content area
+        readableElements = Array.from(document.querySelectorAll('.app-container ' + readableElementsSelectors));
+
+        // Add new listeners
+        readableElements.forEach(el => {
+            el.addEventListener('click', handleReadableElementClick);
+            el.addEventListener('touchstart', handleReadableElementClick);
+        });
+    }
+
+    function handleReadableElementClick(event) {
+        if (currentMode === 'visual' && isVoiceAssistantActive) {
+            event.stopPropagation(); // Prevent parent clicks if nested
+            const textToSpeak = event.target.textContent.trim();
+            if (textToSpeak) {
+                speakText(textToSpeak);
+            } else {
+                speakText(translations[languageSelect.value].noContentToRead);
+            }
+        }
+    }
+
+    voiceAssistantBtn.addEventListener("click", () => {
+        if (currentMode === 'visual') {
+            isVoiceAssistantActive = !isVoiceAssistantActive;
+            synth.cancel(); // Stop any ongoing speech
+
+            if (isVoiceAssistantActive) {
+                speakText(translations[languageSelect.value].voiceAssistantActivated);
+                applyVoiceAssistantHighlighting(true);
+                attachVoiceAssistantListeners(); // Attach listeners when VA is active
+            } else {
+                speakText(translations[languageSelect.value].voiceAssistantDeactivated);
+                applyVoiceAssistantHighlighting(false);
+                // Listeners are not explicitly removed here, but `handleReadableElementClick` checks `isVoiceAssistantActive`
+            }
+        }
+    });
+
+    // --- AI Chatbot Logic ---
+    let isChatModalOpen = false;
+
+    function appendMessage(sender, text) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message-bubble');
+        if (sender === 'user') {
+            messageDiv.classList.add('message-user');
+        } else {
+            messageDiv.classList.add('message-bot');
+        }
+        messageDiv.textContent = text;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom
+    }
+
+    function getBotResponse(message) {
+        const lowerCaseMessage = message.toLowerCase();
+        const tr = translations[languageSelect.value];
+
+        if (lowerCaseMessage.includes("hello") || lowerCaseMessage.includes("hi") || lowerCaseMessage.includes("hey")) {
+            return tr.chatbotGreeting;
+        } else if (lowerCaseMessage.includes("help") || lowerCaseMessage.includes("assist")) {
+            return tr.chatbotHelp;
+        } else if (lowerCaseMessage.includes("balance") || lowerCaseMessage.includes("amount")) {
+            return tr.chatbotBalance;
+        } else if (lowerCaseMessage.includes("transactions") || lowerCaseMessage.includes("history") || lowerCaseMessage.includes("spent")) {
+            return tr.chatbotTransactions;
+        } else if (lowerCaseMessage.includes("offers") || lowerCaseMessage.includes("discounts")) {
+            return tr.chatbotOffers;
+        } else if (lowerCaseMessage.includes("loans") || lowerCaseMessage.includes("borrow")) {
+            return tr.chatbotLoans;
+        } else if (lowerCaseMessage.includes("thank you") || lowerCaseMessage.includes("thanks")) {
+            return tr.chatbotThanks;
+        } else if (lowerCaseMessage.includes("bye") || lowerCaseMessage.includes("goodbye") || lowerCaseMessage.includes("see you")) {
+            return tr.chatbotFarewell;
+        } else {
+            return tr.chatbotGeneral;
+        }
+    }
+
+    chatBotBtn.addEventListener('click', () => {
+        isChatModalOpen = !isChatModalOpen;
+        chatModal.classList.toggle('active', isChatModalOpen);
+        if (isChatModalOpen) {
+            appendMessage('bot', translations[languageSelect.value].chatbotWelcome);
+            speakText(translations[languageSelect.value].chatbotWelcome);
+            chatInput.focus();
+        } else {
+            synth.cancel(); // Stop speech when closing chat
+        }
+    });
+
+    closeChatBtn.addEventListener('click', () => {
+        isChatModalOpen = false;
+        chatModal.classList.remove('active');
+        synth.cancel(); // Stop speech when closing chat
+    });
+
+    sendChatBtn.addEventListener('click', () => {
+        const userMessage = chatInput.value.trim();
+        if (userMessage) {
+            appendMessage('user', userMessage);
+            chatInput.value = ''; // Clear input
+            const botResponse = getBotResponse(userMessage);
+            setTimeout(() => { // Simulate AI thinking time
+                appendMessage('bot', botResponse);
+                speakText(botResponse);
+            }, 500);
+        }
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendChatBtn.click();
+        }
+    });
+
+    // Function to show the UPI PIN modal
+    function showUpiPinModal() {
+        upiPinModal.style.display = 'flex'; // Use flex to center content
+        upiPinInput.value = ''; // Clear input
+        upiPinInput.focus();
+    }
+
+    // Function to hide the UPI PIN modal
+    function hideUpiPinModal() {
+        upiPinModal.style.display = 'none';
+    }
+
+    // Function to verify UPI PIN
+    function verifyUpiPin() {
+        clearTimeout(hideBalanceTimeout); // Clear any existing timeout
+        if (upiPinInput.value === correctUpiPin) {
+            userBalance.textContent = actualBalance; // Display actual balance
+            toggleBalanceIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            balanceVisible = true;
+            hideUpiPinModal();
+            // Automatically hide balance after 10 seconds
+            hideBalanceTimeout = setTimeout(() => {
+                userBalance.textContent = '****.xx';
+                toggleBalanceIcon.classList.replace('fa-eye-slash', 'fa-eye');
+                balanceVisible = false;
+            }, 10000);
+        } else {
+            alert('Incorrect UPI PIN. Please try again.'); // Simple error message
+            upiPinInput.value = ''; // Clear input for re-entry
+            upiPinInput.focus();
+        }
+    }
+
+    // Function to toggle balance visibility
+    function toggleBalanceVisibility() {
+        if (balanceVisible) {
+            userBalance.textContent = '****.xx';
+            toggleBalanceIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            balanceVisible = false;
+            clearTimeout(hideBalanceTimeout); // Clear timeout if manually hidden
+        } else {
+            showUpiPinModal();
+        }
+    }
+
+    // Event listener for UPI PIN verification and balance toggle
+    toggleBalanceIcon.addEventListener('click', toggleBalanceVisibility);
+    verifyUpiPinBtn.addEventListener('click', verifyUpiPin);
+    upiPinCloseBtn.addEventListener('click', hideUpiPinModal);
+
+    // Allow pressing Enter in the PIN input to verify
+    upiPinInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            verifyUpiPin();
+        }
+    });
+
+    // Hide modal if clicked outside (optional, but good UX)
+    window.addEventListener('click', (event) => {
+        if (event.target == upiPinModal) {
+            hideUpiPinModal();
+        }
+    });
+
+    // Initialize default language and mode
+    updateLanguage(languageSelect.value);
+    changeMode(modeSelect.value); // This will also handle initial dark mode state if `isDarkModeActive` was true (it's false by default)
+    
+    // Make sure the balance is masked on page load
+    userBalance.textContent = '****.xx';
+
+    // Event listeners for SmartBank quick actions (for demo, just alert)
+    documentgetElementById("payBtn").addEventListener("click", () => alert("Pay functionality not implemented yet."));
+    documentgetElementById("transferBtn").addEventListener("click", () => alert("Transfer functionality not implemented yet."));
+    documentgetElementById("depositBtn").addEventListener("click", () => alert("Deposit functionality not implemented yet."));
+    documentgetElementById("statementBtn").addEventListener("click", () => alert("Statement functionality not implemented yet."));
+
+</script>
+
+</body>
+</html>
+�

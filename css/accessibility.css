@@ -1,0 +1,264 @@
+/* Accessibility Mode Styles */
+
+/* Normal Mode */
+body.mode-normal {
+    font-size: 1rem;
+    background: #f5f7fa;
+    color: #222;
+}
+
+body.mode-normal header {
+    background: #0077cc;
+    color: #fff;
+}
+
+body.mode-normal .user-card {
+    background: linear-gradient(135deg, #0a74da, #005fa3);
+    color: white;
+}
+
+body.mode-normal section > h3 {
+    color: #004a99;
+}
+
+body.mode-normal .quick-actions button {
+    background: #0077cc;
+    color: white;
+}
+
+body.mode-normal .quick-actions button:hover {
+    background-color: #005fa3;
+}
+
+body.mode-normal li {
+    background: white;
+}
+
+body.mode-normal .feature-box {
+    background: white;
+}
+
+body.mode-normal .feature-title {
+    color: #1a202c;
+}
+
+body.mode-normal .feature-description {
+    color: #4a5568;
+}
+
+body.mode-normal .section-title {
+    color: #1e293b;
+}
+
+/* Senior Mode - Larger text, higher contrast */
+body.mode-senior {
+    font-size: 1.2rem;
+    background: #ffffff;
+    color: #000000;
+    line-height: 1.6;
+}
+
+body.mode-senior header {
+    background: #005299;
+    color: #ffffff;
+    padding: 1.2rem 1.5rem;
+}
+
+body.mode-senior h1, 
+body.mode-senior h2, 
+body.mode-senior h3 {
+    font-weight: 800;
+}
+
+body.mode-senior .user-card {
+    background: #003366;
+    color: #ffffff;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+body.mode-senior .user-balance {
+    font-size: 3rem;
+}
+
+body.mode-senior .quick-actions button {
+    background: #005299;
+    color: #ffffff;
+    font-size: 1.3rem;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+body.mode-senior .quick-actions button:hover {
+    background: #003d73;
+}
+
+body.mode-senior li {
+    background: #ffffff;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+body.mode-senior .title {
+    font-size: 1.3rem;
+}
+
+body.mode-senior .desc {
+    font-size: 1.1rem;
+    color: #333333;
+}
+
+body.mode-senior .amount {
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+body.mode-senior select,
+body.mode-senior input,
+body.mode-senior button {
+    font-size: 1.2rem;
+}
+
+body.mode-senior .section-title {
+    font-size: 2.5rem;
+    color: #003366;
+}
+
+/* Visual Impairment Mode - High contrast, even larger text */
+body.mode-visual {
+    font-size: 1.4rem;
+    background: #000000;
+    color: #ffffff;
+    line-height: 1.8;
+}
+
+body.mode-visual header {
+    background: #0000cc;
+    color: #ffffff;
+    padding: 1.5rem;
+}
+
+body.mode-visual h1, 
+body.mode-visual h2, 
+body.mode-visual h3 {
+    font-weight: 900;
+}
+
+body.mode-visual .user-card {
+    background: #0000cc;
+    color: #ffffff;
+    padding: 2.5rem;
+    border-radius: 15px;
+    border: 3px solid #ffffff;
+}
+
+body.mode-visual .user-balance {
+    font-size: 3.5rem;
+}
+
+body.mode-visual .quick-actions button {
+    background: #ffff00;
+    color: #000000;
+    font-size: 1.5rem;
+    padding: 1.2rem 1.8rem;
+    border-radius: 10px;
+    border: 3px solid #ffffff;
+    font-weight: 800;
+}
+
+body.mode-visual .quick-actions button:hover {
+    background: #ffcc00;
+}
+
+body.mode-visual li {
+    background: #333333;
+    color: #ffffff;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    border: 2px solid #ffffff;
+}
+
+body.mode-visual .title {
+    font-size: 1.5rem;
+    color: #ffff00;
+}
+
+body.mode-visual .desc {
+    font-size: 1.3rem;
+    color: #ffffff;
+}
+
+body.mode-visual .amount {
+    font-size: 1.5rem;
+    font-weight: 900;
+}
+
+body.mode-visual .amount.positive {
+    color: #00ff00;
+}
+
+body.mode-visual .amount.negative {
+    color: #ff6666;
+}
+
+body.mode-visual select,
+body.mode-visual input,
+body.mode-visual button {
+    font-size: 1.4rem;
+    border: 2px solid #ffffff;
+}
+
+body.mode-visual .section-title {
+    font-size: 3rem;
+    color: #ffff00;
+}
+
+/* Settings container and mode selector */
+.settings-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: absolute;
+    right: 1.5rem;
+    top: 1rem;
+}
+
+select {
+    border-radius: 6px;
+    border: none;
+    padding: 0.4rem 0.7rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+select:focus {
+    outline: 2px solid #004a99;
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+select option {
+    background-color: #0077cc;
+    color: white;
+}
+
+/* Screen reader only class */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}

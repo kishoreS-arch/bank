@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deposit Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/accessibility.css">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    }
+    .btn-primary {
+      transition: transform 0.2s, background-color 0.3s;
+    }
+    .btn-primary:hover {
+      transform: scale(1.05);
+      background-color: #4338ca;
+    }
+    .input-field {
+      transition: border-color 0.3s;
+    }
+    .input-field:focus {
+      border-color: #4f46e5;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+    .modal {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Header for accessibility mode selector */
+    header {
+      background: #0077cc;
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+    }
+    header h1 {
+      margin: 0;
+      font-weight: 900;
+      font-size: 1.8rem;
+      user-select: none;
+    }
+  </style>
+</head>
+<body class="mode-normal min-h-screen flex flex-col">
+  <header>
+    <h1>SmartBank Deposit</h1>
+    <!-- Settings container will be added by accessibility.js -->
+  </header>
+  <div class="container mx-auto p-6 max-w-md bg-white rounded-2xl shadow-lg mt-24">
+    <!-- Back Button -->
+    <div class="mb-4">
+      <a href="home.html" class="btn-primary inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold" aria-label="Back to home">Back</a>
+    </div>
+
+    <!-- Header -->
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Add Money</h1>
+
+    <!-- Quick Actions Bar -->
+    <div class="grid grid-cols-2 gap-4 mb-10" role="list" aria-label="Deposit options" aria-live="polite">
+      <button onclick="showSection('card')" class="btn-primary bg-indigo-600 text-white px-6 py-3 rounded-lg text-sm font-semibold" role="listitem">Debit/Credit Card</button>
+      <button onclick="showSection('bank')" class="btn-primary bg-indigo-600 text-white px-6 py-3 rounded-lg text-sm font-semibold" role="listitem">Bank Account</button>
+    </div>
+
+    <!-- Deposit Sections -->
+    <div id="card" class="deposit-section hidden">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Add Debit/Credit Card</h2>
+      <input id="card-number" type="text" placeholder="Enter card number" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <div class="flex gap-4">
+        <input id="card-expiry" type="text" placeholder="MM/YY" class="input-field w-1/2 p-3 mb-3 border border-gray-300 rounded-lg">
+        <input id="card-cvv" type="text" placeholder="CVV" class="input-field w-1/2 p-3 mb-3 border border-gray-300 rounded-lg">
+      </div>
+      <input id="card-name" type="text" placeholder="Name on card" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="card-amount" type="number" placeholder="Enter amount (₹)" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <button onclick="initiateDeposit('card')" class="btn-primary bg-teal-500 text-white px-4 py-3 rounded-lg w-full font-semibold">Add Funds</button>
+    </div>
+
+    <div id="bank" class="deposit-section hidden">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Add Bank Account</h2>
+      <input id="bank-account-number" type="text" placeholder="Enter account number" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="bank-ifsc" type="text" placeholder="Enter IFSC code" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="bank-name" type="text" placeholder="Account holder name" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="bank-amount" type="number" placeholder="Enter amount (₹)" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <button onclick="initiateDeposit('bank')" class="btn-primary bg-teal-500 text-white px-4 py-3 rounded-lg w-full font-semibold">Add Funds</button>
+    </div>
+
+    <!-- Verification Modal -->
+    <div id="verify-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm modal">
+        <h2 class="text-xl font-semibold mb-4 text-gray-700">Verify Payment Method</h2>
+        <p class="text-gray-600 mb-4">A verification code has been sent to your bank/card issuer.</p>
+        <input id="verify-code" type="text" placeholder="Enter verification code" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+        <button onclick="confirmDeposit()" class="btn-primary bg-teal-500 text-white px-4 py-3 rounded-lg w-full font-semibold">Confirm</button>
+        <button onclick="closeVerifyModal()" class="btn-primary bg-red-500 text-white px-4 py-3 rounded-lg w-full mt-3 font-semibold">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Status Message -->
+    <div id="status-message" class="hidden mt-6 p-4 rounded-lg text-white text-center"></div>
+  </div>
+
+  <script>
+    let currentMethod = '';
+
+    function showSection(section) {
+      document.querySelectorAll('.deposit-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById(section).classList.remove('hidden');
+      currentMethod = section;
+    }
+
+    function initiateDeposit(method) {
+      let amount, isValid = true;
+      if (method === 'card') {
+        amount = document.getElementById('card-amount').value;
+        const cardNumber = document.getElementById('card-number').value;
+        const cardExpiry = document.getElementById('card-expiry').value;
+        const cardCvv = document.getElementById('card-cvv').value;
+        const cardName = document.getElementById('card-name').value;
+        if (!cardNumber || !cardExpiry || !cardCvv || !cardName) isValid = false;
+      } else if (method === 'bank') {
+        amount = document.getElementById('bank-amount').value;
+        const accountNumber = document.getElementById('bank-account-number').value;
+        const ifsc = document.getElementById('bank-ifsc').value;
+        const bankName = document.getElementById('bank-name').value;
+        if (!accountNumber || !ifsc || !bankName) isValid = false;
+      }
+
+      if (!amount || amount <= 0 || amount > 100000) {
+        showStatus('Error: Amount must be between ₹1 and ₹1,00,000.', 'bg-red-500');
+        return;
+      }
+      if (!isValid) {
+        showStatus('Error: Please fill in all required fields.', 'bg-red-500');
+        return;
+      }
+
+      document.getElementById('verify-modal').classList.remove('hidden');
+    }
+
+    function confirmDeposit() {
+      const code = document.getElementById('verify-code').value;
+      if (!code || code.length < 4) {
+        showStatus('Error: Please enter a valid verification code.', 'bg-red-500');
+        return;
+      }
+
+      // Simulate successful deposit
+      showStatus('Funds added successfully!', 'bg-teal-500');
+      closeVerifyModal();
+      clearInputs();
+    }
+
+    function closeVerifyModal() {
+      document.getElementById('verify-modal').classList.add('hidden');
+      document.getElementById('verify-code').value = '';
+    }
+
+    function showStatus(message, bgClass) {
+      const statusDiv = document.getElementById('status-message');
+      statusDiv.textContent = message;
+      statusDiv.className = `mt-6 p-4 rounded-lg text-white text-center ${bgClass}`;
+      statusDiv.classList.remove('hidden');
+      setTimeout(() => statusDiv.classList.add('hidden'), 3000);
+    }
+
+    function clearInputs() {
+      document.querySelectorAll('input').forEach(input => input.value = '');
+    }
+
+    // Show card section by default
+    showSection('card');
+  </script>
+  <script src="js/accessibility.js"></script>
+</body>
+</html>

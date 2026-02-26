@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBank - Assets & Rates</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="shared-theme.css">
+    <style>
+        .networth-card {
+            background: linear-gradient(135deg, #0a74da, #005fa3);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 12px 25px rgba(10, 116, 218, 0.45);
+        }
+
+        .networth-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.8;
+        }
+
+        .networth-value {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin: 0.3rem 0;
+        }
+
+        .networth-profit {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .donut-canvas {
+            width: 170px;
+            height: 170px;
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Mode overrides for networth card */
+        body.mode-senior .networth-card {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: #fff9db;
+        }
+
+        body.mode-senior .networth-value {
+            font-size: 2.8rem;
+        }
+
+        body.mode-visual .networth-card {
+            background: #000;
+            color: #00ffff;
+            box-shadow: 0 12px 25px #00ffff;
+        }
+
+        body.mode-visual .networth-value {
+            font-size: 3rem;
+        }
+
+        body.mode-normal.dark-mode-active .networth-card {
+            background: linear-gradient(135deg, #4299e1, #2b6cb0);
+        }
+    </style>
+</head>
+
+<body class="mode-normal">
+    <script src="shared-theme.js"></script>
+
+    <div class="page-header">
+        <button class="back-btn" onclick="window.location.href='home.html'"><i class="fas fa-arrow-left"></i></button>
+        <h1>💎 Assets & Live Rates</h1>
+        <div class="mode-switcher">
+            <button class="mode-btn" data-mode="normal" onclick="SmartBankTheme.applyMode('normal')">Normal</button>
+            <button class="mode-btn" data-mode="senior" onclick="SmartBankTheme.applyMode('senior')">Senior</button>
+            <button class="mode-btn" data-mode="visual" onclick="SmartBankTheme.applyMode('visual')">Visual</button>
+            <button class="dark-toggle" onclick="SmartBankTheme.toggleDark()">🌙</button>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <!-- Net Worth -->
+        <div class="networth-card">
+            <div class="networth-label">Total Net Worth</div>
+            <div class="networth-value" id="netWorth">₹0</div>
+            <div class="networth-profit" id="netProfit">Loading...</div>
+        </div>
+
+        <!-- Donut chart -->
+        <div class="sb-card">
+            <div class="chart-container">
+                <canvas class="donut-canvas" id="donutChart" width="170" height="170"></canvas>
+                <div class="chart-legend" id="chartLegend"></div>
+            </div>
+        </div>
+
+        <!-- Live Metal Rates -->
+        <div class="sb-section-title">📊 Live Metal Rates <span
+                style="font-size:0.65rem;font-weight:400;opacity:0.6">(Updated every 5 min)</span></div>
+        <div class="sb-card-grid cols-4" id="ratesGrid">
+            <div class="stat-card">
+                <div class="stat-label">Loading...</div>
+                <div class="stat-value">⏳</div>
+            </div>
+        </div>
+
+        <!-- Asset Portfolio -->
+        <div class="sb-section-title">🏦 Your Assets</div>
+        <div class="sb-list" id="assetGrid">
+            <div class="sb-list-item" style="justify-content:center">Loading assets...</div>
+        </div>
+    </div>
+
+    <!-- Add Asset FAB -->
+    <button class="sb-fab" onclick="openModal()">+</button>
+
+    <!-- Modal -->
+    <div class="sb-modal-overlay" id="addModal">
+        <div class="sb-modal">
+            <h3>Add New Asset</h3>
+            <label class="sb-label">Asset Type</label>
+            <select class="sb-select" id="assetType">
+                <option value="bank">🏦 Bank Balance</option>
+                <option value="cash">💵 Cash</option>
+                <option value="gold">🪙 Gold</option>
+                <option value="silver">🥈 Silver</option>
+                <option value="property">🏠 Property</option>
+                <option value="crypto">₿ Crypto</option>
+                <option value="stocks">📊 Stocks</option>
+                <option value="fd">🏛️ Fixed Deposit</option>
+                <option value="mutual_fund">📈 Mutual Fund</option>
+            </select>
+            <label class="sb-label">Name / Description</label>
+            <input type="text" class="sb-input" id="assetName" placeholder="e.g. SBI Savings Account">
+            <label class="sb-label">Quantity</label>
+            <input type="number" class="sb-input" id="assetQty" placeholder="1" step="0.001" value="1">
+            <label class="sb-label">Current Value (₹)</label>
+            <input type="number" class="sb-input" id="assetValue" placeholder="50000">
+            <label class="sb-label">Purchase Value (₹)</label>
+            <input type="number" class="sb-input" id="assetPurchase" placeholder="45000">
+            <div class="modal-actions">
+                <button class="sb-btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="sb-btn" onclick="addAsset()">Add Asset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin.includes('localhost:3000') ? 'http://localhost:3000/api' : '/api';
+        const ASSET_ICONS = { bank: '🏦', cash: '💵', gold: '🪙', silver: '🥈', property: '🏠', crypto: '₿', stocks: '📊', fd: '🏛️', mutual_fund: '📈' };
+        const ASSET_COLORS = { bank: '#3b82f6', cash: '#10b981', gold: '#f59e0b', silver: '#94a3b8', property: '#14b8a6', crypto: '#8b5cf6', stocks: '#ec4899', fd: '#f97316', mutual_fund: '#06b6d4' };
+
+        const DEMO_ASSETS = [
+            { assetType: 'bank', name: 'SBI Savings', quantity: 1, unit: 'account', currentValue: 125000, purchaseValue: 0 },
+            { assetType: 'gold', name: 'Physical Gold', quantity: 10, unit: 'grams', currentValue: 72500, purchaseValue: 55000 },
+            { assetType: 'silver', name: 'Silver Coins', quantity: 100, unit: 'grams', currentValue: 9200, purchaseValue: 7500 },
+            { assetType: 'fd', name: 'HDFC FD', quantity: 1, unit: 'units', currentValue: 200000, purchaseValue: 180000 },
+            { assetType: 'mutual_fund', name: 'Axis Bluechip SIP', quantity: 500, unit: 'units', currentValue: 35000, purchaseValue: 30000 },
+            { assetType: 'crypto', name: 'Bitcoin', quantity: 0.005, unit: 'BTC', currentValue: 45000, purchaseValue: 30000 },
+            { assetType: 'cash', name: 'Cash in Hand', quantity: 1, unit: 'units', currentValue: 15000, purchaseValue: 15000 }
+        ];
+
+        let assets = [];
+
+        async function loadAssets() {
+            try { const r = await fetch(`${API}/assets`); const d = await r.json(); assets = d.success ? d.assets : DEMO_ASSETS; } catch (e) { assets = DEMO_ASSETS; }
+            renderAssets();
+        }
+
+        async function loadRates() {
+            let rates;
+            try { const r = await fetch(`${API}/rates/metals`); const d = await r.json(); rates = d.success ? d.rates : null; } catch (e) { rates = null; }
+            if (!rates) rates = { gold: 7250, gold_22k: 6650, silver: 92, platinum: 3100, source: 'demo' };
+
+            document.getElementById('ratesGrid').innerHTML = `
+        <div class="stat-card"><div class="stat-label">Gold 24K</div><div class="stat-value text-amber">₹${rates.gold?.toLocaleString('en-IN')}</div><div class="stat-label">per gram</div></div>
+        <div class="stat-card"><div class="stat-label">Gold 22K</div><div class="stat-value text-amber">₹${(rates.gold_22k || Math.round(rates.gold * 0.916)).toLocaleString('en-IN')}</div><div class="stat-label">per gram</div></div>
+        <div class="stat-card"><div class="stat-label">Silver</div><div class="stat-value" style="color:#94a3b8">₹${rates.silver?.toLocaleString('en-IN')}</div><div class="stat-label">per gram</div></div>
+        <div class="stat-card"><div class="stat-label">Platinum</div><div class="stat-value text-blue">₹${(rates.platinum || 3100).toLocaleString('en-IN')}</div><div class="stat-label">per gram</div></div>
+    `;
+
+            assets.forEach(a => {
+                if (a.assetType === 'gold' && a.quantity) a.currentValue = a.quantity * rates.gold;
+                if (a.assetType === 'silver' && a.quantity) a.currentValue = a.quantity * rates.silver;
+            });
+            renderAssets();
+        }
+
+        function renderAssets() {
+            const totalValue = assets.reduce((s, a) => s + a.currentValue, 0);
+            const totalPurchase = assets.reduce((s, a) => s + (a.purchaseValue || 0), 0);
+            const profit = totalValue - totalPurchase;
+
+            document.getElementById('netWorth').textContent = '₹' + totalValue.toLocaleString('en-IN');
+            const profitEl = document.getElementById('netProfit');
+            profitEl.textContent = (profit >= 0 ? '↑ +' : '↓ ') + '₹' + Math.abs(profit).toLocaleString('en-IN') + ' overall';
+
+            drawDonut(assets);
+
+            const grid = document.getElementById('assetGrid');
+            grid.innerHTML = assets.map(a => {
+                const gain = a.currentValue - (a.purchaseValue || 0);
+                const gainPct = a.purchaseValue ? ((gain / a.purchaseValue) * 100).toFixed(1) : '0.0';
+                return `<div class="sb-list-item">
+            <div class="sb-icon" style="background:${ASSET_COLORS[a.assetType] || '#64748b'}20">${ASSET_ICONS[a.assetType] || '📦'}</div>
+            <div class="sb-item-info"><div class="sb-item-title">${a.name}</div><div class="sb-item-meta">${a.quantity || 1} ${a.unit || 'units'} • ${a.assetType.replace('_', ' ')}</div></div>
+            <div class="sb-item-right"><div class="sb-item-value">₹${a.currentValue.toLocaleString('en-IN')}</div><div class="sb-item-meta ${gain >= 0 ? 'text-green' : 'text-red'}">${gain >= 0 ? '↑' : '↓'} ${gainPct}%</div></div>
+        </div>`;
+            }).join('') || '<div class="sb-list-item" style="justify-content:center">No assets added</div>';
+        }
+
+        function drawDonut(assets) {
+            const canvas = document.getElementById('donutChart');
+            const ctx = canvas.getContext('2d');
+            const cx = 85, cy = 85, r = 70, innerR = 45;
+            ctx.clearRect(0, 0, 170, 170);
+
+            const byType = {};
+            assets.forEach(a => { byType[a.assetType] = (byType[a.assetType] || 0) + a.currentValue; });
+            const total = Object.values(byType).reduce((s, v) => s + v, 0) || 1;
+            const entries = Object.entries(byType).sort((a, b) => b[1] - a[1]);
+
+            let startAngle = -Math.PI / 2;
+            const legendEl = document.getElementById('chartLegend');
+            legendEl.innerHTML = '';
+
+            entries.forEach(([type, value]) => {
+                const angle = (value / total) * Math.PI * 2;
+                const color = ASSET_COLORS[type] || '#64748b';
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, startAngle, startAngle + angle);
+                ctx.arc(cx, cy, innerR, startAngle + angle, startAngle, true);
+                ctx.fillStyle = color;
+                ctx.fill();
+                startAngle += angle;
+
+                const pct = ((value / total) * 100).toFixed(0);
+                legendEl.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${color}"></div>${ASSET_ICONS[type] || '📦'} ${type.replace('_', ' ')} — ${pct}%</div>`;
+            });
+
+            // Center text - check mode
+            const isVisual = document.body.classList.contains('mode-visual');
+            const isDark = document.body.classList.contains('dark-mode-active');
+            ctx.fillStyle = isVisual ? '#00ffff' : isDark ? '#f7fafc' : '#222';
+            ctx.font = 'bold 14px Roboto'; ctx.textAlign = 'center';
+            ctx.fillText('₹' + (total / 1000).toFixed(0) + 'K', cx, cy - 2);
+            ctx.fillStyle = isVisual ? '#00ccff' : isDark ? '#a0aec0' : '#666';
+            ctx.font = '10px Roboto';
+            ctx.fillText('Net Worth', cx, cy + 14);
+        }
+
+        function openModal() { document.getElementById('addModal').classList.add('active'); }
+        function closeModal() { document.getElementById('addModal').classList.remove('active'); }
+
+        async function addAsset() {
+            const asset = {
+                assetType: document.getElementById('assetType').value,
+                name: document.getElementById('assetName').value,
+                quantity: parseFloat(document.getElementById('assetQty').value) || 1,
+                currentValue: parseFloat(document.getElementById('assetValue').value) || 0,
+                purchaseValue: parseFloat(document.getElementById('assetPurchase').value) || 0
+            };
+            if (!asset.name || !asset.currentValue) { alert('Please fill name and value'); return; }
+            assets.push(asset);
+            try { await fetch(`${API}/assets`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(asset) }); } catch (e) { }
+            renderAssets(); closeModal();
+        }
+
+        loadAssets(); loadRates();
+        setInterval(loadRates, 5 * 60 * 1000);
+    </script>
+    <script src="voice-assist.js"></script>
+    <script src="ai-chatbot.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBank - Secure Banking</title>
+    <meta name="description" content="SmartBank secure mobile banking with OTP, bank linking, and MPIN">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #0d2137 30%, #0f2e4a 60%, #0a1628 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            position: relative
+        }
+
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: float 15s infinite
+        }
+
+        .particle:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: -50px;
+            left: -50px;
+            background: rgba(59, 130, 246, 0.12)
+        }
+
+        .particle:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            top: 60%;
+            right: -30px;
+            animation-delay: 3s;
+            background: rgba(16, 185, 129, 0.08)
+        }
+
+        .particle:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            bottom: -20px;
+            left: 40%;
+            animation-delay: 6s;
+            background: rgba(139, 92, 246, 0.08)
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+                opacity: .5
+            }
+
+            50% {
+                transform: translateY(-30px) rotate(5deg);
+                opacity: .8
+            }
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            padding: 1rem
+        }
+
+        .login-card {
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.18);
+            border-radius: 1.5rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 0 80px rgba(59, 130, 246, 0.06);
+            transition: transform .3s
+        }
+
+        /* Step indicator */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: .4rem;
+            margin-bottom: 1.8rem
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(100, 116, 139, 0.35);
+            transition: all .4s
+        }
+
+        .step-dot.active {
+            background: #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            transform: scale(1.4)
+        }
+
+        .step-dot.completed {
+            background: #10b981
+        }
+
+        /* Steps container */
+        .steps-wrapper {
+            position: relative;
+            overflow: hidden;
+            min-height: 340px
+        }
+
+        .step {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            transform: translateX(60px);
+            transition: all .4s cubic-bezier(.4, 0, .2, 1);
+            pointer-events: none;
+            visibility: hidden
+        }
+
+        .step.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            visibility: visible
+        }
+
+        .step.exit-left {
+            opacity: 0;
+            transform: translateX(-60px)
+        }
+
+        /* WELCOME / LOGO */
+        .welcome-screen {
+            text-align: center;
+            padding: 1rem 0
+        }
+
+        .logo-big {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            font-size: 2.8rem;
+            color: #fff;
+            box-shadow: 0 12px 35px rgba(59, 130, 246, 0.35);
+            animation: pulse-glow 3s infinite
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 12px 35px rgba(59, 130, 246, 0.35)
+            }
+
+            50% {
+                box-shadow: 0 12px 50px rgba(59, 130, 246, 0.55)
+            }
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #f1f5f9;
+            letter-spacing: -.02em;
+            margin-bottom: .3rem
+        }
+
+        .welcome-subtitle {
+            font-size: .85rem;
+            color: #64748b;
+            margin-bottom: 2rem
+        }
+
+        .auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: .8rem
+        }
+
+        .btn-signup {
+            width: 100%;
+            padding: .95rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border: none;
+            border-radius: .85rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            letter-spacing: .02em
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4)
+        }
+
+        .btn-login-alt {
+            width: 100%;
+            padding: .95rem;
+            background: transparent;
+            color: #3b82f6;
+            border: 1.5px solid rgba(59, 130, 246, 0.4);
+            border-radius: .85rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .3s
+        }
+
+        .btn-login-alt:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6
+        }
+
+        /* Common elements */
+        .step-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: .3rem
+        }
+
+        .step-desc {
+            font-size: .8rem;
+            color: #64748b;
+            margin-bottom: 1.5rem
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: .85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+            margin-bottom: 1rem;
+            padding: .3rem 0;
+            transition: color .3s
+        }
+
+        .back-btn:hover {
+            color: #3b82f6
+        }
+
+        /* Phone input */
+        .phone-input-container {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: .85rem;
+            padding: 0 1rem;
+            transition: border-color .3s, box-shadow .3s;
+            margin-bottom: 1.2rem
+        }
+
+        .phone-input-container:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15)
+        }
+
+        .country-code {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #94a3b8;
+            padding-right: .5rem;
+            border-right: 1px solid rgba(100, 116, 139, 0.3);
+            user-select: none;
+            white-space: nowrap
+        }
+
+        .phone-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #f1f5f9;
+            font-size: 1.1rem;
+            font-weight: 500;
+            padding: 1rem .5rem;
+            letter-spacing: .05em
+        }
+
+        .phone-input::placeholder {
+            color: #475569
+        }
+
+        /* Form inputs */
+        .form-input {
+            width: 100%;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: .85rem;
+            padding: 1rem;
+            color: #f1f5f9;
+            font-size: .95rem;
+            font-weight: 500;
+            outline: none;
+            transition: border-color .3s, box-shadow .3s;
+            margin-bottom: 1rem
+        }
+
+        .form-input::placeholder {
+            color: #475569
+        }
+
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15)
+        }
+
+        .form-label {
+            display: block;
+            font-size: .8rem;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: .4rem
+        }
+
+        /* OTP */
+        .otp-inputs {
+            display: flex;
+            gap: .5rem;
+            justify-content: center;
+            margin-bottom: 1rem
+        }
+
+        .otp-box {
+            width: 48px;
+            height: 56px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1.5px solid rgba(59, 130, 246, 0.2);
+            border-radius: .75rem;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            outline: none;
+            transition: all .3s
+        }
+
+        .otp-box:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            transform: scale(1.05)
+        }
+
+        .otp-box.filled {
+            border-color: #10b981
+        }
+
+        .timer {
+            text-align: center;
+            color: #64748b;
+            font-size: .8rem;
+            margin-top: .8rem
+        }
+
+        .timer span {
+            color: #3b82f6;
+            font-weight: 600
+        }
+
+        .resend-btn {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: .85rem;
+            text-decoration: underline;
+            margin-top: .3rem
+        }
+
+        .resend-btn:disabled {
+            color: #475569;
+            cursor: not-allowed;
+            text-decoration: none
+        }
+
+        /* Bank linking */
+        .bank-search-section {
+            margin-bottom: 1.2rem
+        }
+
+        .bank-list {
+            display: flex;
+            flex-direction: column;
+            gap: .6rem;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: .3rem
+        }
+
+        .bank-list::-webkit-scrollbar {
+            width: 4px
+        }
+
+        .bank-list::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 2px
+        }
+
+        .bank-card {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1.5px solid rgba(100, 116, 139, 0.15);
+            border-radius: .85rem;
+            padding: .8rem 1rem;
+            cursor: pointer;
+            transition: all .25s
+        }
+
+        .bank-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.08)
+        }
+
+        .bank-card.selected {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1)
+        }
+
+        .bank-card.linked {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.08)
+        }
+
+        .bank-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: .6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0
+        }
+
+        .bank-name {
+            font-size: .9rem;
+            font-weight: 600;
+            color: #f1f5f9
+        }
+
+        .bank-detail {
+            font-size: .7rem;
+            color: #64748b
+        }
+
+        .bank-status {
+            margin-left: auto;
+            font-size: .7rem;
+            font-weight: 600;
+            padding: .25rem .6rem;
+            border-radius: 1rem
+        }
+
+        .bank-status.found {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7
+        }
+
+        .bank-status.not-found {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5
+        }
+
+        .linking-animation {
+            text-align: center;
+            padding: 1.5rem 0
+        }
+
+        .linking-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin: 0 auto 1rem
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        /* MPIN */
+        .mpin-dots {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1.5rem
+        }
+
+        .mpin-dot-indicator {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            transition: all .2s
+        }
+
+        .mpin-dot-indicator.filled {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5)
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .6rem;
+            max-width: 280px;
+            margin: 0 auto
+        }
+
+        .numpad-btn {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(100, 116, 139, 0.15);
+            border-radius: .85rem;
+            color: #f1f5f9;
+            font-size: 1.4rem;
+            font-weight: 600;
+            padding: .9rem;
+            cursor: pointer;
+            transition: all .15s;
+            user-select: none
+        }
+
+        .numpad-btn:hover {
+            background: rgba(59, 130, 246, 0.2)
+        }
+
+        .numpad-btn:active {
+            transform: scale(.92);
+            background: rgba(59, 130, 246, 0.3)
+        }
+
+        .numpad-btn.empty {
+            visibility: hidden
+        }
+
+        .numpad-btn.backspace {
+            font-size: 1.2rem;
+            color: #ef4444
+        }
+
+        .mpin-length-toggle {
+            display: flex;
+            gap: .5rem;
+            justify-content: center;
+            margin-bottom: 1.2rem
+        }
+
+        .mpin-len-btn {
+            padding: .4rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: transparent;
+            color: #94a3b8;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .3s
+        }
+
+        .mpin-len-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            color: #3b82f6
+        }
+
+        /* Success */
+        .success-screen {
+            text-align: center;
+            padding: 2rem 0
+        }
+
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.2rem;
+            color: #fff;
+            animation: scaleIn .5s cubic-bezier(.34, 1.56, .64, 1);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4)
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            margin-bottom: .5rem
+        }
+
+        .success-desc {
+            color: #64748b;
+            font-size: .85rem;
+            margin-bottom: 2rem
+        }
+
+        /* Buttons */
+        .btn-primary {
+            width: 100%;
+            padding: .95rem;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: #fff;
+            border: none;
+            border-radius: .85rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .3s;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            letter-spacing: .02em
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4)
+        }
+
+        .btn-primary:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none
+        }
+
+        /* Messages */
+        .message {
+            padding: .7rem 1rem;
+            border-radius: .6rem;
+            font-size: .8rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            display: none;
+            animation: slideDown .3s
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            display: block
+        }
+
+        .message.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+            display: block
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* Demo toggle */
+        .demo-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            margin-top: 1.5rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid rgba(100, 116, 139, 0.15)
+        }
+
+        .demo-label {
+            font-size: .7rem;
+            color: #64748b
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            background: rgba(100, 116, 139, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background .3s
+        }
+
+        .toggle-switch.active {
+            background: #10b981
+        }
+
+        .toggle-knob {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            transition: transform .3s
+        }
+
+        .toggle-switch.active .toggle-knob {
+            transform: translateX(16px)
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            margin-top: 1rem;
+            font-size: .65rem;
+            color: #475569
+        }
+
+        .security-badge i {
+            color: #10b981
+        }
+
+        .spinner-inline {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            vertical-align: middle;
+            margin-right: .4rem
+        }
+
+        @media(max-width:440px) {
+            .login-card {
+                padding: 2rem 1.5rem
+            }
+
+            .otp-box {
+                width: 42px;
+                height: 50px;
+                font-size: 1.2rem
+            }
+
+            .numpad-btn {
+                padding: .75rem;
+                font-size: 1.2rem
+            }
+        }
+
+        /* === LOGIN MODE OVERRIDES === */
+        /* Senior Mode */
+        body.mode-senior {
+            background: linear-gradient(135deg, #4a2c0f 0%, #5c3310 30%, #6b3a12 60%, #4a2c0f 100%);
+        }
+
+        body.mode-senior .login-card {
+            background: rgba(74, 44, 15, 0.85);
+            border-color: rgba(217, 119, 6, 0.3);
+        }
+
+        body.mode-senior .welcome-title,
+        body.mode-senior .step-title,
+        body.mode-senior .success-title {
+            color: #fff9db;
+            font-size: 2.2rem;
+        }
+
+        body.mode-senior .welcome-subtitle,
+        body.mode-senior .step-desc,
+        body.mode-senior .success-desc {
+            color: #d4a76a;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        body.mode-senior .btn-primary {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            font-size: 1.2rem;
+            padding: 1.1rem;
+        }
+
+        body.mode-senior .btn-signup {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            font-size: 1.2rem;
+        }
+
+        body.mode-senior .btn-login-alt {
+            border-color: #d97706;
+            color: #d97706;
+            font-size: 1.2rem;
+        }
+
+        body.mode-senior .form-input,
+        body.mode-senior .phone-input-container {
+            background: rgba(255, 244, 229, 0.12);
+            border-color: rgba(217, 119, 6, 0.3);
+            font-size: 1.1rem;
+        }
+
+        body.mode-senior .form-label,
+        body.mode-senior .country-code {
+            color: #d4a76a;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        body.mode-senior .phone-input,
+        body.mode-senior .form-input {
+            color: #fff9db;
+            font-size: 1.2rem;
+        }
+
+        body.mode-senior .otp-box {
+            font-size: 1.6rem;
+            width: 55px;
+            height: 62px;
+            border-color: rgba(217, 119, 6, 0.3);
+        }
+
+        body.mode-senior .numpad-btn {
+            font-size: 1.6rem;
+            padding: 1.1rem;
+        }
+
+        body.mode-senior .step-dot.active {
+            background: #d97706;
+            box-shadow: 0 0 10px rgba(217, 119, 6, 0.5);
+        }
+
+        body.mode-senior .particle:nth-child(1) {
+            background: rgba(217, 119, 6, 0.15);
+        }
+
+        body.mode-senior .particle:nth-child(2) {
+            background: rgba(180, 83, 9, 0.12);
+        }
+
+        body.mode-senior .logo-big {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            box-shadow: 0 12px 35px rgba(217, 119, 6, 0.35);
+        }
+
+        body.mode-senior .bank-card {
+            background: rgba(255, 244, 229, 0.08);
+            border-color: rgba(217, 119, 6, 0.2);
+        }
+
+        body.mode-senior .bank-card:hover {
+            border-color: #d97706;
+            background: rgba(217, 119, 6, 0.1);
+        }
+
+        body.mode-senior .mpin-dot-indicator {
+            border-color: rgba(217, 119, 6, 0.4);
+        }
+
+        body.mode-senior .mpin-dot-indicator.filled {
+            background: #d97706;
+            border-color: #d97706;
+        }
+
+        /* Visual Impairment Mode */
+        body.mode-visual {
+            background: #000;
+        }
+
+        body.mode-visual .login-card {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
+        }
+
+        body.mode-visual .welcome-title,
+        body.mode-visual .step-title,
+        body.mode-visual .success-title {
+            color: #00ffff;
+            font-size: 2.5rem;
+            font-weight: 900;
+        }
+
+        body.mode-visual .welcome-subtitle,
+        body.mode-visual .step-desc,
+        body.mode-visual .success-desc {
+            color: #00ccff;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        body.mode-visual .btn-primary {
+            background: #00ffff;
+            color: #000;
+            font-size: 1.4rem;
+            font-weight: 900;
+            padding: 1.2rem;
+        }
+
+        body.mode-visual .btn-signup {
+            background: #00ffff;
+            color: #000;
+            font-size: 1.3rem;
+            font-weight: 900;
+        }
+
+        body.mode-visual .btn-login-alt {
+            border-color: #00ffff;
+            color: #00ffff;
+            font-size: 1.3rem;
+            font-weight: 900;
+        }
+
+        body.mode-visual .form-input,
+        body.mode-visual .phone-input-container {
+            background: rgba(0, 0, 0, 0.8);
+            border-color: #00ffff;
+        }
+
+        body.mode-visual .form-label,
+        body.mode-visual .country-code {
+            color: #00ffff;
+            font-size: 1.1rem;
+            font-weight: 900;
+        }
+
+        body.mode-visual .phone-input,
+        body.mode-visual .form-input {
+            color: #00ffff;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        body.mode-visual .otp-box {
+            font-size: 1.8rem;
+            width: 55px;
+            height: 64px;
+            border-color: #00ffff;
+            color: #00ffff;
+            background: #000;
+        }
+
+        body.mode-visual .otp-box.filled {
+            border-color: #00ff99;
+        }
+
+        body.mode-visual .numpad-btn {
+            font-size: 1.8rem;
+            padding: 1.2rem;
+            color: #00ffff;
+            background: rgba(0, 255, 255, 0.08);
+            border-color: rgba(0, 255, 255, 0.3);
+        }
+
+        body.mode-visual .numpad-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+
+        body.mode-visual .step-dot.active {
+            background: #00ffff;
+            box-shadow: 0 0 15px #00ffff;
+        }
+
+        body.mode-visual .step-dot.completed {
+            background: #00ff99;
+        }
+
+        body.mode-visual .particle {
+            display: none;
+        }
+
+        body.mode-visual .logo-big {
+            background: linear-gradient(135deg, #00ffff, #0088cc);
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
+        }
+
+        body.mode-visual .bank-card {
+            background: #000;
+            border: 2px solid #00ffff;
+        }
+
+        body.mode-visual .bank-card:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        body.mode-visual .bank-name {
+            color: #00ffff;
+            font-weight: 900;
+        }
+
+        body.mode-visual .bank-detail {
+            color: #00ccff;
+        }
+
+        body.mode-visual .mpin-dot-indicator {
+            border-color: #00ffff;
+        }
+
+        body.mode-visual .mpin-dot-indicator.filled {
+            background: #00ffff;
+            border-color: #00ffff;
+            box-shadow: 0 0 15px #00ffff;
+        }
+
+        body.mode-visual .success-checkmark {
+            background: linear-gradient(135deg, #00ffff, #00cc99);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+
+        body.mode-visual .security-badge {
+            color: #00ccff;
+        }
+
+        body.mode-visual .security-badge i {
+            color: #00ffff;
+        }
+
+        body.mode-visual .message.error {
+            background: rgba(255, 76, 76, 0.2);
+            border-color: #ff4c4c;
+            color: #ff4c4c;
+            font-weight: 700;
+        }
+
+        body.mode-visual .message.success {
+            background: rgba(0, 255, 153, 0.2);
+            border-color: #00ff99;
+            color: #00ff99;
+            font-weight: 700;
+        }
+
+        /* Mode selector */
+        .login-mode-selector {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.3rem;
+            z-index: 60;
+        }
+
+        .login-mode-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 0.4rem 0.7rem;
+            border-radius: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-mode-btn:hover,
+        .login-mode-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        body.mode-senior .login-mode-btn.active {
+            background: rgba(217, 119, 6, 0.3);
+            border-color: #d97706;
+            color: #fff9db;
+        }
+
+        body.mode-visual .login-mode-btn.active {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+    </style>
+</head>
+
+<body class="mode-normal">
+
+    <!-- Mode Selector -->
+    <div class="login-mode-selector">
+        <button class="login-mode-btn" data-mode="normal" onclick="switchLoginMode('normal')">Normal</button>
+        <button class="login-mode-btn" data-mode="senior" onclick="switchLoginMode('senior')">Senior</button>
+        <button class="login-mode-btn" data-mode="visual" onclick="switchLoginMode('visual')">Visual</button>
+    </div>
+    <script>
+        function switchLoginMode(mode) {
+            document.body.classList.remove('mode-normal', 'mode-senior', 'mode-visual');
+            document.body.classList.add('mode-' + mode);
+            localStorage.setItem('smartbank_mode', mode);
+            localStorage.setItem('selectedMode', mode);
+            document.querySelectorAll('.login-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+        }
+        // Apply saved mode
+        (function () {
+            var m = localStorage.getItem('smartbank_mode') || localStorage.getItem('selectedMode') || 'normal';
+            switchLoginMode(m);
+        })();
+    </script>
+
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Step Indicator (hidden on welcome) -->
+            <div class="step-indicator" id="stepIndicator" style="display:none">
+                <div class="step-dot" id="dot1"></div>
+                <div class="step-dot" id="dot2"></div>
+                <div class="step-dot" id="dot3"></div>
+                <div class="step-dot" id="dot4"></div>
+                <div class="step-dot" id="dot5"></div>
+                <div class="step-dot" id="dot6"></div>
+            </div>
+
+            <div id="messageBox" class="message"></div>
+
+            <div class="steps-wrapper" id="stepsWrapper">
+
+                <!-- STEP 1: WELCOME + LOGO -->
+                <div class="step active" id="step1">
+                    <div class="welcome-screen">
+                        <div class="logo-big">🏦</div>
+                        <div class="welcome-title">SmartBank</div>
+                        <div class="welcome-subtitle">India's Most Trusted Digital Bank</div>
+                        <div class="auth-buttons">
+                            <button class="btn-signup" id="goSignupBtn">Create Account</button>
+                            <button class="btn-login-alt" id="goLoginBtn">I Already Have an Account</button>
+                        </div>
+                    </div>
+                    <div class="security-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>RSA-2048 • SHA-512 • End-to-End Encrypted</span>
+                    </div>
+                </div>
+
+                <!-- STEP 2: SIGNUP FORM -->
+                <div class="step" id="step2">
+                    <button class="back-btn" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> Back</button>
+                    <div class="step-title" id="authTitle">Create Your Account</div>
+                    <div class="step-desc" id="authDesc">Join SmartBank in seconds</div>
+                    <div id="signupFields">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="nameInput" placeholder="Enter your full name"
+                            autocomplete="name">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-input" id="emailInput" placeholder="you@example.com"
+                            autocomplete="email">
+                        <label class="form-label">Create Password</label>
+                        <input type="password" class="form-input" id="passwordInput" placeholder="Min 8 characters"
+                            autocomplete="new-password">
+                    </div>
+                    <div id="loginFields" style="display:none">
+                        <label class="form-label">Email or Phone</label>
+                        <input type="text" class="form-input" id="loginIdInput"
+                            placeholder="Enter email or phone number">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="loginPassInput" placeholder="Enter your password">
+                    </div>
+                    <button class="btn-primary" id="authSubmitBtn">Continue</button>
+                    <div style="text-align:center;margin-top:1rem">
+                        <button class="resend-btn" id="switchAuthBtn" style="color:#3b82f6">Already have an account?
+                            Login</button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: MOBILE NUMBER + OTP -->
+                <div class="step" id="step3">
+                    <button class="back-btn" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> Back</button>
+                    <div class="step-title">Verify Mobile Number</div>
+                    <div class="step-desc">Link your mobile number to your SmartBank account</div>
+                    <div class="phone-input-container">
+                        <span class="country-code">🇮🇳 +91</span>
+                        <input type="tel" class="phone-input" id="phoneInput" placeholder="10-digit number"
+                            maxlength="10" inputmode="numeric">
+                    </div>
+                    <button class="btn-primary" id="sendOtpBtn" disabled>Send OTP</button>
+                </div>
+
+                <!-- STEP 4: OTP VERIFICATION -->
+                <div class="step" id="step4">
+                    <button class="back-btn" onclick="goToStep(3)"><i class="fas fa-arrow-left"></i> Back</button>
+                    <div class="step-title">Enter OTP</div>
+                    <div class="step-desc">6-digit code sent to <span id="maskedPhone"></span></div>
+                    <div class="otp-inputs" id="otpInputs">
+                        <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" data-index="0">
+                        <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" data-index="1">
+                        <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" data-index="2">
+                        <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" data-index="3">
+                        <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" data-index="4">
+                        <input type="tel" class="otp-box" maxlength="1" inputmode="numeric" data-index="5">
+                    </div>
+                    <button class="btn-primary" id="verifyOtpBtn" disabled>Verify OTP</button>
+                    <div class="timer" id="otpTimer">Resend in <span id="countdown">60</span>s</div>
+                    <div style="text-align:center"><button class="resend-btn" id="resendBtn" disabled>Resend
+                            OTP</button></div>
+                </div>
+
+                <!-- STEP 5: BANK LINKING -->
+                <div class="step" id="step5">
+                    <div class="step-title">Link Your Bank</div>
+                    <div class="step-desc">Finding banks linked to your mobile number...</div>
+                    <div id="bankSearching" class="linking-animation">
+                        <div class="linking-spinner"></div>
+                        <div style="color:#94a3b8;font-size:.85rem">Searching banks linked to +91 <span
+                                id="bankPhone"></span>...</div>
+                    </div>
+                    <div id="bankResults" style="display:none">
+                        <div class="step-desc" style="margin-bottom:.8rem;color:#6ee7b7"><i
+                                class="fas fa-check-circle"></i> Banks found linked to your number</div>
+                        <div class="bank-list" id="bankList"></div>
+                        <button class="btn-primary" id="confirmBankBtn" style="margin-top:1.2rem" disabled>Link Selected
+                            Bank & Continue</button>
+                    </div>
+                </div>
+
+                <!-- STEP 6: MPIN -->
+                <div class="step" id="step6">
+                    <div class="step-title" id="mpinTitle">Set Your MPIN</div>
+                    <div class="step-desc" id="mpinDesc">Create a secure 4 or 6 digit MPIN for quick login</div>
+                    <div class="mpin-length-toggle" id="mpinLengthToggle" style="display:none">
+                        <button class="mpin-len-btn active" data-len="4">4-Digit</button>
+                        <button class="mpin-len-btn" data-len="6">6-Digit</button>
+                    </div>
+                    <div class="mpin-dots" id="mpinDots">
+                        <div class="mpin-dot-indicator"></div>
+                        <div class="mpin-dot-indicator"></div>
+                        <div class="mpin-dot-indicator"></div>
+                        <div class="mpin-dot-indicator"></div>
+                    </div>
+                    <div class="numpad" id="numpad">
+                        <button class="numpad-btn" data-num="1">1</button><button class="numpad-btn"
+                            data-num="2">2</button><button class="numpad-btn" data-num="3">3</button>
+                        <button class="numpad-btn" data-num="4">4</button><button class="numpad-btn"
+                            data-num="5">5</button><button class="numpad-btn" data-num="6">6</button>
+                        <button class="numpad-btn" data-num="7">7</button><button class="numpad-btn"
+                            data-num="8">8</button><button class="numpad-btn" data-num="9">9</button>
+                        <button class="numpad-btn empty"></button><button class="numpad-btn"
+                            data-num="0">0</button><button class="numpad-btn backspace" id="mpinBackspace">⌫</button>
+                    </div>
+                </div>
+
+                <!-- STEP 7: SUCCESS -->
+                <div class="step" id="step7">
+                    <div class="success-screen">
+                        <div class="success-checkmark">✓</div>
+                        <div class="success-title">Welcome to SmartBank!</div>
+                        <div class="success-desc">Your account is ready. Redirecting...</div>
+                        <div class="linking-spinner" style="border-top-color:#10b981;width:30px;height:30px"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demo toggle -->
+            <div class="demo-toggle">
+                <span class="demo-label">Demo Mode</span>
+                <div class="toggle-switch active" id="demoToggle">
+                    <div class="toggle-knob"></div>
+                </div>
+                <span class="demo-label" style="color:#10b981;font-weight:600" id="demoStatus">ON</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // SmartBank Full Login Flow
+        // =============================================
+        const API_BASE = window.location.origin.includes('localhost:3000') ? 'http://localhost:3000/api' : '/api';
+
+        // Simulated bank database (demo)
+        const DEMO_BANKS = [
+            { id: 'sbi', name: 'State Bank of India', shortName: 'SBI', color: '#1a5276', accSuffix: '4521', type: 'Savings' },
+            { id: 'hdfc', name: 'HDFC Bank', shortName: 'HDFC', color: '#00498f', accSuffix: '8834', type: 'Savings' },
+            { id: 'icici', name: 'ICICI Bank', shortName: 'ICICI', color: '#b74601', accSuffix: '2210', type: 'Current' },
+            { id: 'axis', name: 'Axis Bank', shortName: 'AXIS', color: '#800020', accSuffix: '6677', type: 'Savings' },
+            { id: 'kotak', name: 'Kotak Mahindra Bank', shortName: 'KMB', color: '#e03c31', accSuffix: '9912', type: 'Savings' },
+            { id: 'bob', name: 'Bank of Baroda', shortName: 'BOB', color: '#f26522', accSuffix: '3345', type: 'Savings' },
+            { id: 'pnb', name: 'Punjab National Bank', shortName: 'PNB', color: '#003d6b', accSuffix: '7788', type: 'Savings' }
+        ];
+
+        let state = {
+            phone: '', isNewUser: true, isSignup: true,
+            mpinLength: 4, mpinValue: '', demoMode: true,
+            otpAttempts: 0, maxOtpAttempts: 3, currentStep: 1,
+            rsaPublicKey: null, confirmMpin: '', isConfirmStep: false,
+            selectedBank: null, userName: ''
+        };
+
+        const phoneInput = document.getElementById('phoneInput');
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const otpBoxes = document.querySelectorAll('.otp-box');
+        const messageBox = document.getElementById('messageBox');
+        const mpinDotsContainer = document.getElementById('mpinDots');
+        const numpadBtns = document.querySelectorAll('.numpad-btn[data-num]');
+        const mpinBackspace = document.getElementById('mpinBackspace');
+        const confirmBankBtn = document.getElementById('confirmBankBtn');
+
+        function showMessage(text, type = 'error') {
+            messageBox.textContent = text;
+            messageBox.className = `message ${type}`;
+            setTimeout(() => { messageBox.className = 'message'; }, 5000);
+        }
+
+        function goToStep(stepNum) {
+            const prev = document.getElementById(`step${state.currentStep}`);
+            const next = document.getElementById(`step${stepNum}`);
+            prev.classList.remove('active'); prev.classList.add('exit-left');
+            setTimeout(() => prev.classList.remove('exit-left'), 400);
+            next.classList.add('active');
+
+            const indicator = document.getElementById('stepIndicator');
+            indicator.style.display = stepNum === 1 ? 'none' : 'flex';
+
+            for (let i = 1; i <= 7; i++) {
+                const d = document.getElementById(`dot${Math.min(i, 6)}`);
+                if (d) {
+                    d.classList.remove('active', 'completed');
+                    if (i < stepNum) d.classList.add('completed');
+                    else if (i === stepNum) d.classList.add('active');
+                }
+            }
+            state.currentStep = stepNum;
+        }
+
+        // Fingerprint
+        function getFingerprint() {
+            const c = document.createElement('canvas'), ctx = c.getContext('2d');
+            ctx.textBaseline = 'top'; ctx.font = '14px Arial'; ctx.fillText('SB', 2, 2);
+            const raw = [navigator.userAgent, navigator.language, screen.width + 'x' + screen.height, screen.colorDepth, new Date().getTimezoneOffset(), c.toDataURL().slice(-50)].join('|');
+            let h = 0; for (let i = 0; i < raw.length; i++) { h = ((h << 5) - h) + raw.charCodeAt(i); h |= 0; }
+            return 'fp_' + Math.abs(h).toString(36);
+        }
+
+        // RSA encrypt
+        async function rsaEncrypt(mpin) {
+            try {
+                if (!state.rsaPublicKey) {
+                    try { const r = await fetch(`${API_BASE}/auth/public-key`); const d = await r.json(); if (d.success) state.rsaPublicKey = d.publicKey; } catch (e) { }
+                }
+                if (state.rsaPublicKey) {
+                    const pem = state.rsaPublicKey.replace('-----BEGIN PUBLIC KEY-----', '').replace('-----END PUBLIC KEY-----', '').replace(/\s/g, '');
+                    const bin = atob(pem); const bytes = new Uint8Array(bin.length);
+                    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                    const key = await window.crypto.subtle.importKey('spki', bytes.buffer, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+                    const enc = await window.crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, new TextEncoder().encode(mpin));
+                    return btoa(String.fromCharCode(...new Uint8Array(enc)));
+                }
+                return btoa('DEMO_' + mpin);
+            } catch (e) { return btoa('DEMO_' + mpin); }
+        }
+
+        // ===== STEP 1: WELCOME =====
+        document.getElementById('goSignupBtn').addEventListener('click', () => {
+            state.isSignup = true;
+            document.getElementById('authTitle').textContent = 'Create Your Account';
+            document.getElementById('authDesc').textContent = 'Join SmartBank in seconds';
+            document.getElementById('signupFields').style.display = 'block';
+            document.getElementById('loginFields').style.display = 'none';
+            document.getElementById('authSubmitBtn').textContent = 'Create Account';
+            document.getElementById('switchAuthBtn').textContent = 'Already have an account? Login';
+            goToStep(2);
+        });
+
+        document.getElementById('goLoginBtn').addEventListener('click', () => {
+            state.isSignup = false; state.isNewUser = false;
+            document.getElementById('authTitle').textContent = 'Welcome Back';
+            document.getElementById('authDesc').textContent = 'Login to your SmartBank account';
+            document.getElementById('signupFields').style.display = 'none';
+            document.getElementById('loginFields').style.display = 'block';
+            document.getElementById('authSubmitBtn').textContent = 'Login';
+            document.getElementById('switchAuthBtn').textContent = "Don't have an account? Sign Up";
+            goToStep(2);
+        });
+
+        // ===== STEP 2: SIGNUP / LOGIN =====
+        document.getElementById('switchAuthBtn').addEventListener('click', () => {
+            state.isSignup = !state.isSignup;
+            if (state.isSignup) {
+                state.isNewUser = true;
+                document.getElementById('authTitle').textContent = 'Create Your Account';
+                document.getElementById('authDesc').textContent = 'Join SmartBank in seconds';
+                document.getElementById('signupFields').style.display = 'block';
+                document.getElementById('loginFields').style.display = 'none';
+                document.getElementById('authSubmitBtn').textContent = 'Create Account';
+                document.getElementById('switchAuthBtn').textContent = 'Already have an account? Login';
+            } else {
+                state.isNewUser = false;
+                document.getElementById('authTitle').textContent = 'Welcome Back';
+                document.getElementById('authDesc').textContent = 'Login to your SmartBank account';
+                document.getElementById('signupFields').style.display = 'none';
+                document.getElementById('loginFields').style.display = 'block';
+                document.getElementById('authSubmitBtn').textContent = 'Login';
+                document.getElementById('switchAuthBtn').textContent = "Don't have an account? Sign Up";
+            }
+        });
+
+        document.getElementById('authSubmitBtn').addEventListener('click', () => {
+            if (state.isSignup) {
+                const name = document.getElementById('nameInput').value.trim();
+                const email = document.getElementById('emailInput').value.trim();
+                const pass = document.getElementById('passwordInput').value;
+                if (!name) { showMessage('Please enter your name'); return; }
+                if (!email || !email.includes('@')) { showMessage('Please enter a valid email'); return; }
+                if (!pass || pass.length < 8) { showMessage('Password must be at least 8 characters'); return; }
+                state.userName = name;
+                localStorage.setItem('sb_user_name', name);
+                localStorage.setItem('sb_user_email', email);
+                showMessage('Account details saved!', 'success');
+            } else {
+                const loginId = document.getElementById('loginIdInput').value.trim();
+                const loginPass = document.getElementById('loginPassInput').value;
+                if (!loginId) { showMessage('Please enter email or phone'); return; }
+                if (!loginPass) { showMessage('Please enter password'); return; }
+                state.userName = localStorage.getItem('sb_user_name') || 'User';
+            }
+            goToStep(3);
+            setTimeout(() => phoneInput.focus(), 400);
+        });
+
+        // ===== STEP 3: PHONE =====
+        phoneInput.addEventListener('input', () => {
+            const v = phoneInput.value.replace(/\D/g, ''); phoneInput.value = v;
+            sendOtpBtn.disabled = v.length !== 10;
+        });
+        phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !sendOtpBtn.disabled) sendOtpBtn.click(); });
+
+        sendOtpBtn.addEventListener('click', async () => {
+            state.phone = phoneInput.value.replace(/\D/g, '');
+            if (state.phone.length !== 10) return;
+            sendOtpBtn.innerHTML = '<span class="spinner-inline"></span>Sending...'; sendOtpBtn.disabled = true;
+            await new Promise(r => setTimeout(r, 1200));
+            if (state.demoMode) showMessage('Demo OTP: 123456', 'success');
+            document.getElementById('maskedPhone').textContent = `+91 ${state.phone.slice(0, 2)}****${state.phone.slice(-2)}`;
+            sendOtpBtn.innerHTML = 'Send OTP'; sendOtpBtn.disabled = false;
+            goToStep(4); startOtpTimer();
+            setTimeout(() => otpBoxes[0].focus(), 500);
+        });
+
+        // ===== STEP 4: OTP =====
+        let otpTimerInterval;
+        function startOtpTimer() {
+            let s = 60; const el = document.getElementById('countdown'), rb = document.getElementById('resendBtn'), te = document.getElementById('otpTimer');
+            rb.disabled = true; te.style.display = 'block';
+            clearInterval(otpTimerInterval);
+            otpTimerInterval = setInterval(() => { s--; el.textContent = s; if (s <= 0) { clearInterval(otpTimerInterval); te.style.display = 'none'; rb.disabled = false; } }, 1000);
+        }
+
+        otpBoxes.forEach((box, idx) => {
+            box.addEventListener('input', e => {
+                const v = e.target.value.replace(/\D/g, ''); e.target.value = v.slice(0, 1);
+                if (v && idx < 5) otpBoxes[idx + 1].focus();
+                e.target.classList.toggle('filled', !!v);
+                const full = Array.from(otpBoxes).map(b => b.value).join('');
+                verifyOtpBtn.disabled = full.length !== 6;
+                if (full.length === 6) setTimeout(() => verifyOtpBtn.click(), 300);
+            });
+            box.addEventListener('keydown', e => { if (e.key === 'Backspace' && !e.target.value && idx > 0) otpBoxes[idx - 1].focus(); });
+            box.addEventListener('paste', e => {
+                e.preventDefault(); const paste = (e.clipboardData.getData('text') || '').replace(/\D/g, '');
+                otpBoxes.forEach((b, i) => { b.value = paste[i] || ''; b.classList.toggle('filled', !!paste[i]); });
+                if (paste.length >= 1) otpBoxes[Math.min(paste.length - 1, 5)].focus();
+                verifyOtpBtn.disabled = paste.length < 6;
+            });
+        });
+
+        document.getElementById('resendBtn').addEventListener('click', () => {
+            state.otpAttempts++;
+            if (state.otpAttempts >= state.maxOtpAttempts) { showMessage('Max OTP attempts reached'); return; }
+            otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); });
+            startOtpTimer();
+            showMessage(`OTP resent! Demo: 123456`, 'success');
+        });
+
+        verifyOtpBtn.addEventListener('click', async () => {
+            const otp = Array.from(otpBoxes).map(b => b.value).join('');
+            if (otp.length !== 6) return;
+            verifyOtpBtn.innerHTML = '<span class="spinner-inline"></span>Verifying...'; verifyOtpBtn.disabled = true;
+            await new Promise(r => setTimeout(r, 1000));
+
+            if (state.demoMode && otp !== '123456') {
+                showMessage('Invalid OTP. Demo code: 123456'); verifyOtpBtn.innerHTML = 'Verify OTP'; verifyOtpBtn.disabled = false; return;
+            }
+
+            showMessage('OTP verified! ✓', 'success');
+            clearInterval(otpTimerInterval);
+            verifyOtpBtn.innerHTML = 'Verify OTP'; verifyOtpBtn.disabled = false;
+
+            // Move to bank linking
+            goToStep(5);
+            document.getElementById('bankPhone').textContent = state.phone.slice(0, 2) + '****' + state.phone.slice(-2);
+            startBankSearch();
+        });
+
+        // ===== STEP 5: BANK LINKING =====
+        function startBankSearch() {
+            document.getElementById('bankSearching').style.display = 'block';
+            document.getElementById('bankResults').style.display = 'none';
+
+            // Simulate bank search (2-3 seconds)
+            setTimeout(() => {
+                // Pick 2-3 random banks as "linked"
+                const shuffled = [...DEMO_BANKS].sort(() => Math.random() - 0.5);
+                const linked = shuffled.slice(0, 2 + Math.floor(Math.random() * 2));
+
+                document.getElementById('bankSearching').style.display = 'none';
+                document.getElementById('bankResults').style.display = 'block';
+
+                const list = document.getElementById('bankList');
+                list.innerHTML = '';
+
+                linked.forEach(bank => {
+                    const card = document.createElement('div');
+                    card.className = 'bank-card linked';
+                    card.dataset.bankId = bank.id;
+                    card.innerHTML = `
+                <div class="bank-icon" style="background:${bank.color}">${bank.shortName.slice(0, 2)}</div>
+                <div>
+                    <div class="bank-name">${bank.name}</div>
+                    <div class="bank-detail">${bank.type} • ****${bank.accSuffix}</div>
+                </div>
+                <div class="bank-status found"><i class="fas fa-check"></i> Found</div>
+            `;
+                    card.addEventListener('click', () => {
+                        list.querySelectorAll('.bank-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        state.selectedBank = bank;
+                        confirmBankBtn.disabled = false;
+                    });
+                    list.appendChild(card);
+                });
+
+                // Auto-select first bank
+                if (linked.length > 0) {
+                    list.querySelector('.bank-card').classList.add('selected');
+                    state.selectedBank = linked[0];
+                    confirmBankBtn.disabled = false;
+                }
+            }, 2500);
+        }
+
+        confirmBankBtn.addEventListener('click', () => {
+            if (!state.selectedBank) return;
+            localStorage.setItem('sb_linked_bank', JSON.stringify(state.selectedBank));
+            showMessage(`${state.selectedBank.name} linked! ✓`, 'success');
+
+            // Setup MPIN step based on new/existing user
+            if (state.isNewUser) {
+                document.getElementById('mpinTitle').textContent = 'Set Your MPIN';
+                document.getElementById('mpinDesc').textContent = 'Create a secure MPIN for quick login';
+                document.getElementById('mpinLengthToggle').style.display = 'flex';
+            } else {
+                document.getElementById('mpinTitle').textContent = 'Enter MPIN';
+                document.getElementById('mpinDesc').textContent = 'Enter your MPIN to continue';
+                document.getElementById('mpinLengthToggle').style.display = 'none';
+            }
+
+            state.mpinValue = ''; state.isConfirmStep = false;
+            updateMpinDots();
+            goToStep(6);
+        });
+
+        // ===== STEP 6: MPIN =====
+        document.querySelectorAll('.mpin-len-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mpin-len-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.mpinLength = parseInt(btn.dataset.len);
+                state.mpinValue = '';
+                updateMpinDots();
+            });
+        });
+
+        function updateMpinDots() {
+            mpinDotsContainer.innerHTML = '';
+            for (let i = 0; i < state.mpinLength; i++) {
+                const d = document.createElement('div');
+                d.className = 'mpin-dot-indicator' + (i < state.mpinValue.length ? ' filled' : '');
+                mpinDotsContainer.appendChild(d);
+            }
+        }
+
+        numpadBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (state.mpinValue.length >= state.mpinLength) return;
+                state.mpinValue += btn.dataset.num;
+                updateMpinDots();
+                if (state.mpinValue.length === state.mpinLength) setTimeout(() => handleMpinComplete(), 300);
+            });
+        });
+
+        mpinBackspace.addEventListener('click', () => { state.mpinValue = state.mpinValue.slice(0, -1); updateMpinDots(); });
+
+        document.addEventListener('keydown', e => {
+            if (state.currentStep !== 6) return;
+            if (/^\d$/.test(e.key) && state.mpinValue.length < state.mpinLength) {
+                state.mpinValue += e.key; updateMpinDots();
+                if (state.mpinValue.length === state.mpinLength) setTimeout(() => handleMpinComplete(), 300);
+            } else if (e.key === 'Backspace') { state.mpinValue = state.mpinValue.slice(0, -1); updateMpinDots(); }
+        });
+
+        async function handleMpinComplete() {
+            const mpin = state.mpinValue;
+
+            // New user: confirm MPIN
+            if (state.isNewUser && !state.isConfirmStep) {
+                state.confirmMpin = mpin; state.isConfirmStep = true; state.mpinValue = '';
+                document.getElementById('mpinTitle').textContent = 'Confirm MPIN';
+                document.getElementById('mpinDesc').textContent = 'Re-enter your MPIN to confirm';
+                document.getElementById('mpinLengthToggle').style.display = 'none';
+                updateMpinDots();
+                showMessage('Re-enter MPIN to confirm', 'success');
+                return;
+            }
+
+            if (state.isNewUser && state.isConfirmStep && mpin !== state.confirmMpin) {
+                showMessage('MPINs do not match. Try again.');
+                state.mpinValue = ''; state.isConfirmStep = false; state.confirmMpin = '';
+                document.getElementById('mpinTitle').textContent = 'Set Your MPIN';
+                document.getElementById('mpinDesc').textContent = 'Create a secure MPIN for quick login';
+                document.getElementById('mpinLengthToggle').style.display = 'flex';
+                updateMpinDots(); return;
+            }
+
+            // RSA encrypt MPIN
+            const encrypted = await rsaEncrypt(mpin);
+            const fp = getFingerprint();
+
+            try {
+                if (state.isNewUser) {
+                    try {
+                        const r = await fetch(`${API_BASE}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: state.phone, encryptedMpin: encrypted, fingerprint: fp }) });
+                        const d = await r.json();
+                        if (d.success) { localStorage.setItem('smartbank_token', d.token); localStorage.setItem('sb_registered_' + state.phone, 'true'); }
+                    } catch (e) {
+                        localStorage.setItem('sb_registered_' + state.phone, 'true');
+                        localStorage.setItem('sb_mpin_' + state.phone, btoa(mpin));
+                        localStorage.setItem('smartbank_token', 'demo_token_' + Date.now());
+                    }
+                } else {
+                    try {
+                        const r = await fetch(`${API_BASE}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: state.phone, encryptedMpin: encrypted, fingerprint: fp }) });
+                        const d = await r.json();
+                        if (d.success) { localStorage.setItem('smartbank_token', d.token); }
+                        else { showMessage(d.message || 'Login failed'); state.mpinValue = ''; updateMpinDots(); return; }
+                    } catch (e) {
+                        const stored = localStorage.getItem('sb_mpin_' + state.phone);
+                        if (stored && atob(stored) !== mpin) { showMessage('Incorrect MPIN'); state.mpinValue = ''; updateMpinDots(); return; }
+                        localStorage.setItem('smartbank_token', 'demo_token_' + Date.now());
+                    }
+                }
+                localStorage.setItem('sb_user_phone', state.phone);
+                goToStep(7);
+                setTimeout(() => { window.location.href = 'home.html'; }, 2000);
+            } catch (e) { showMessage('Authentication failed'); state.mpinValue = ''; updateMpinDots(); }
+        }
+
+        // ===== DEMO TOGGLE =====
+        document.getElementById('demoToggle').addEventListener('click', function () {
+            state.demoMode = !state.demoMode;
+            this.classList.toggle('active', state.demoMode);
+            document.getElementById('demoStatus').textContent = state.demoMode ? 'ON' : 'OFF';
+            document.getElementById('demoStatus').style.color = state.demoMode ? '#10b981' : '#64748b';
+        });
+
+        // ===== AUTO-LOGIN CHECK =====
+        const existingToken = localStorage.getItem('smartbank_token');
+        if (existingToken && existingToken.startsWith('demo_')) {
+            const t = parseInt(existingToken.split('_').pop());
+            if (Date.now() - t < 15 * 60 * 1000) window.location.href = 'home.html';
+            else localStorage.removeItem('smartbank_token');
+        }
+    </script>
+    <script src="voice-assist.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBank - Transactions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="shared-theme.css">
+</head>
+
+<body class="mode-normal">
+    <script src="shared-theme.js"></script>
+
+    <div class="page-header">
+        <button class="back-btn" onclick="window.location.href='home.html'"><i class="fas fa-arrow-left"></i></button>
+        <h1>💳 Transactions</h1>
+        <div class="mode-switcher">
+            <button class="mode-btn" data-mode="normal" onclick="SmartBankTheme.applyMode('normal')">Normal</button>
+            <button class="mode-btn" data-mode="senior" onclick="SmartBankTheme.applyMode('senior')">Senior</button>
+            <button class="mode-btn" data-mode="visual" onclick="SmartBankTheme.applyMode('visual')">Visual</button>
+            <button class="dark-toggle" onclick="SmartBankTheme.toggleDark()">🌙</button>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <!-- Summary Cards -->
+        <div class="sb-card-grid cols-3">
+            <div class="stat-card">
+                <div class="stat-label">Total Income</div>
+                <div class="stat-value text-green" id="totalCredit">₹0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Spent</div>
+                <div class="stat-value text-red" id="totalDebit">₹0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Net Flow</div>
+                <div class="stat-value text-blue" id="netFlow">₹0</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="sb-card">
+            <div class="filter-row">
+                <input type="text" class="sb-input" id="searchInput" placeholder="🔍 Search transactions...">
+                <select class="sb-select" id="typeFilter">
+                    <option value="">All Types</option>
+                    <option value="credit">Credit</option>
+                    <option value="debit">Debit</option>
+                </select>
+                <select class="sb-select" id="categoryFilter">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Spending Chart -->
+        <div class="sb-card">
+            <div class="sb-section-title">📊 Spending by Category</div>
+            <div class="chart-bars" id="chartBars"></div>
+        </div>
+
+        <!-- Transaction List -->
+        <div class="sb-list" id="txList">
+            <div class="sb-list-item" style="justify-content:center;color:#666">Loading transactions...</div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin.includes('localhost:3000') ? 'http://localhost:3000/api' : '/api';
+        const CATEGORIES = {
+            food: { label: 'Food', icon: '🍕', color: '#f59e0b' }, shopping: { label: 'Shopping', icon: '🛒', color: '#8b5cf6' },
+            fuel: { label: 'Fuel', icon: '⛽', color: '#ef4444' }, entertainment: { label: 'Entertainment', icon: '🎬', color: '#ec4899' },
+            recharge: { label: 'Recharge', icon: '📱', color: '#06b6d4' }, housing: { label: 'Housing', icon: '🏠', color: '#14b8a6' },
+            bills: { label: 'Bills', icon: '💡', color: '#f97316' }, salary: { label: 'Salary', icon: '💰', color: '#22c55e' },
+            transfer: { label: 'Transfer', icon: '🔄', color: '#3b82f6' }, investment: { label: 'Invest', icon: '📈', color: '#10b981' },
+            medical: { label: 'Medical', icon: '🏥', color: '#ef4444' }, travel: { label: 'Travel', icon: '✈️', color: '#6366f1' },
+            education: { label: 'Education', icon: '📚', color: '#a855f7' }, other: { label: 'Other', icon: '📦', color: '#64748b' }
+        };
+
+        const DEMO_TX = [
+            { amount: 850.75, type: 'debit', category: 'food', description: 'Swiggy Order', date: '2025-05-20T10:00:00', aiCategorized: true },
+            { amount: 45000, type: 'credit', category: 'salary', description: 'Salary - TCS', date: '2025-05-15T09:00:00', aiCategorized: true },
+            { amount: 1200.50, type: 'debit', category: 'shopping', description: 'Amazon Purchase', date: '2025-05-12T14:00:00', aiCategorized: true },
+            { amount: 2500, type: 'debit', category: 'fuel', description: 'HP Petrol Pump', date: '2025-05-10T08:00:00', aiCategorized: true },
+            { amount: 299, type: 'debit', category: 'recharge', description: 'Jio Recharge', date: '2025-05-08T11:00:00', aiCategorized: true },
+            { amount: 700, type: 'debit', category: 'food', description: 'Zomato Restaurant', date: '2025-05-05T20:00:00', aiCategorized: true },
+            { amount: 5000, type: 'debit', category: 'transfer', description: 'UPI to Rahul', date: '2025-04-28T15:00:00', aiCategorized: false },
+            { amount: 1500, type: 'credit', category: 'investment', description: 'Groww Returns', date: '2025-04-25T12:00:00', aiCategorized: true },
+            { amount: 1800, type: 'debit', category: 'bills', description: 'TNEB Electricity', date: '2025-04-22T10:00:00', aiCategorized: true },
+            { amount: 350, type: 'debit', category: 'travel', description: 'Uber Ride', date: '2025-04-18T18:00:00', aiCategorized: true },
+            { amount: 199, type: 'debit', category: 'entertainment', description: 'Netflix', date: '2025-04-15T09:00:00', aiCategorized: true },
+            { amount: 15000, type: 'debit', category: 'housing', description: 'Apartment Rent', date: '2025-04-01T10:00:00', aiCategorized: true },
+            { amount: 10000, type: 'credit', category: 'salary', description: 'Freelance', date: '2025-03-20T14:00:00', aiCategorized: true },
+            { amount: 400, type: 'debit', category: 'education', description: 'Udemy Course', date: '2025-03-10T10:00:00', aiCategorized: true },
+            { amount: 3000, type: 'debit', category: 'medical', description: 'Apollo Pharmacy', date: '2025-03-05T16:00:00', aiCategorized: true }
+        ];
+
+        let allTransactions = [];
+
+        async function loadTransactions() {
+            try {
+                const res = await fetch(`${API}/transactions`);
+                const data = await res.json();
+                allTransactions = data.success ? data.transactions : DEMO_TX;
+            } catch (e) { allTransactions = DEMO_TX; }
+            renderAll();
+        }
+
+        function renderAll() {
+            const type = document.getElementById('typeFilter').value;
+            const cat = document.getElementById('categoryFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = allTransactions.filter(tx => {
+                if (type && tx.type !== type) return false;
+                if (cat && tx.category !== cat) return false;
+                if (search && !tx.description.toLowerCase().includes(search)) return false;
+                return true;
+            });
+
+            // Summary
+            let totalCredit = 0, totalDebit = 0;
+            filtered.forEach(tx => { if (tx.type === 'credit') totalCredit += tx.amount; else totalDebit += tx.amount; });
+            document.getElementById('totalCredit').textContent = '₹' + totalCredit.toLocaleString('en-IN');
+            document.getElementById('totalDebit').textContent = '₹' + totalDebit.toLocaleString('en-IN');
+            const net = totalCredit - totalDebit;
+            const netEl = document.getElementById('netFlow');
+            netEl.textContent = (net >= 0 ? '+' : '') + '₹' + net.toLocaleString('en-IN');
+            netEl.className = 'stat-value ' + (net >= 0 ? 'text-green' : 'text-red');
+
+            // Chart
+            const catTotals = {};
+            filtered.filter(t => t.type === 'debit').forEach(tx => { catTotals[tx.category] = (catTotals[tx.category] || 0) + tx.amount; });
+            const maxCat = Math.max(...Object.values(catTotals), 1);
+            const chartHtml = Object.entries(catTotals).sort((a, b) => b[1] - a[1]).map(([cat, total]) => {
+                const c = CATEGORIES[cat] || CATEGORIES.other;
+                const pct = (total / maxCat) * 100;
+                return `<div class="chart-bar-row"><div class="chart-bar-label">${c.icon} ${c.label}</div><div class="chart-bar-track"><div class="chart-bar-fill" style="width:${pct}%;background:${c.color}"><span class="chart-bar-value">₹${total.toLocaleString('en-IN')}</span></div></div></div>`;
+            }).join('');
+            document.getElementById('chartBars').innerHTML = chartHtml || '<div style="text-align:center;padding:1rem" class="sb-item-meta">No spending data</div>';
+
+            // List
+            const listHtml = filtered.map(tx => {
+                const c = CATEGORIES[tx.category] || CATEGORIES.other;
+                const d = new Date(tx.date);
+                const dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                return `<div class="sb-list-item">
+            <div class="sb-icon" style="background:${c.color}20">${c.icon}</div>
+            <div class="sb-item-info">
+                <div class="sb-item-title">${tx.description}${tx.aiCategorized ? '<span class="sb-badge sb-badge-ai" style="margin-left:.3rem">AI</span>' : ''}</div>
+                <div class="sb-item-meta">${dateStr} • ${c.label}</div>
+            </div>
+            <div class="sb-item-right">
+                <div class="sb-item-value ${tx.type === 'credit' ? 'text-green' : 'text-red'}">${tx.type === 'credit' ? '+' : '-'}₹${tx.amount.toLocaleString('en-IN')}</div>
+            </div>
+        </div>`;
+            }).join('');
+            document.getElementById('txList').innerHTML = listHtml || '<div class="sb-list-item" style="justify-content:center">No transactions found</div>';
+        }
+
+        // Populate category filter
+        const catSelect = document.getElementById('categoryFilter');
+        Object.entries(CATEGORIES).forEach(([k, v]) => { const o = document.createElement('option'); o.value = k; o.textContent = v.icon + ' ' + v.label; catSelect.appendChild(o); });
+
+        document.getElementById('searchInput').addEventListener('input', renderAll);
+        document.getElementById('typeFilter').addEventListener('change', renderAll);
+        document.getElementById('categoryFilter').addEventListener('change', renderAll);
+
+        loadTransactions();
+    </script>
+    <script src="voice-assist.js"></script>
+    <script src="ai-chatbot.js"></script>
+</body>
+
+</html>

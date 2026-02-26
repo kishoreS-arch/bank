@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBank - Budget Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="shared-theme.css">
+    <style>
+        /* Budget-specific: alert card border coloring (works across all modes) */
+        .budget-card.warning {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .budget-card.danger {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .budget-card.safe {
+            border-left: 4px solid #2ecc71;
+        }
+
+        /* AI suggestion box */
+        .suggest-section {
+            border-left: 4px solid #8e44ad;
+        }
+
+        body.mode-senior .suggest-section {
+            border-left-color: #d97706;
+        }
+
+        body.mode-visual .suggest-section {
+            border-left-color: #00ffff;
+        }
+
+        .suggest-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .suggest-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggest-value {
+            font-weight: 700;
+            color: #8e44ad;
+        }
+
+        body.mode-senior .suggest-value {
+            color: #b45309;
+        }
+
+        body.mode-visual .suggest-value {
+            color: #00ffff;
+        }
+
+        .suggest-reason {
+            font-size: 0.65rem;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<body class="mode-normal">
+    <script src="shared-theme.js"></script>
+
+    <div class="page-header">
+        <button class="back-btn" onclick="window.location.href='home.html'"><i class="fas fa-arrow-left"></i></button>
+        <h1>📊 Budget Manager</h1>
+        <div class="mode-switcher">
+            <button class="mode-btn" data-mode="normal" onclick="SmartBankTheme.applyMode('normal')">Normal</button>
+            <button class="mode-btn" data-mode="senior" onclick="SmartBankTheme.applyMode('senior')">Senior</button>
+            <button class="mode-btn" data-mode="visual" onclick="SmartBankTheme.applyMode('visual')">Visual</button>
+            <button class="dark-toggle" onclick="SmartBankTheme.toggleDark()">🌙</button>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <!-- Overview -->
+        <div class="sb-card-grid cols-2">
+            <div class="stat-card">
+                <div class="stat-label">Total Budget</div>
+                <div class="stat-value text-blue" id="totalBudget">₹0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Spent</div>
+                <div class="stat-value text-red" id="totalSpent">₹0</div>
+            </div>
+        </div>
+
+        <!-- AI Suggestions -->
+        <div class="sb-card suggest-section">
+            <div class="sb-section-title">🧠 AI Budget Suggestions</div>
+            <div id="suggestions">Loading...</div>
+        </div>
+
+        <!-- Budget Cards -->
+        <div class="sb-list" id="budgetGrid">
+            <div class="sb-list-item" style="justify-content:center">Loading budgets...</div>
+        </div>
+    </div>
+
+    <button class="sb-fab" onclick="openModal()">+</button>
+
+    <div class="sb-modal-overlay" id="addModal">
+        <div class="sb-modal">
+            <h3>Set Monthly Budget</h3>
+            <label class="sb-label">Category</label>
+            <select class="sb-select" id="budgetCat">
+                <option value="food">🍕 Food & Dining</option>
+                <option value="shopping">🛒 Shopping</option>
+                <option value="fuel">⛽ Fuel</option>
+                <option value="entertainment">🎬 Entertainment</option>
+                <option value="recharge">📱 Recharge</option>
+                <option value="bills">💡 Bills & Utilities</option>
+                <option value="travel">✈️ Travel</option>
+                <option value="medical">🏥 Medical</option>
+                <option value="education">📚 Education</option>
+                <option value="other">📦 Other</option>
+            </select>
+            <label class="sb-label">Monthly Limit (₹)</label>
+            <input type="number" class="sb-input" id="budgetLimit" placeholder="5000" min="100">
+            <div class="modal-actions">
+                <button class="sb-btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="sb-btn" onclick="addBudget()">Set Budget</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin.includes('localhost:3000') ? 'http://localhost:3000/api' : '/api';
+        const CAT_META = { food: { icon: '🍕', color: '#f59e0b' }, shopping: { icon: '🛒', color: '#8b5cf6' }, fuel: { icon: '⛽', color: '#ef4444' }, entertainment: { icon: '🎬', color: '#ec4899' }, recharge: { icon: '📱', color: '#06b6d4' }, bills: { icon: '💡', color: '#f97316' }, travel: { icon: '✈️', color: '#6366f1' }, medical: { icon: '🏥', color: '#ef4444' }, education: { icon: '📚', color: '#a855f7' }, housing: { icon: '🏠', color: '#14b8a6' }, other: { icon: '📦', color: '#64748b' } };
+
+        const DEMO_BUDGETS = [
+            { category: 'food', monthlyLimit: 5000, currentSpent: 4200, percentage: 84, alertLevel: 'warning', alertMsg: '84% used' },
+            { category: 'shopping', monthlyLimit: 3000, currentSpent: 1200, percentage: 40, alertLevel: 'safe', alertMsg: '40% used' },
+            { category: 'fuel', monthlyLimit: 4000, currentSpent: 3500, percentage: 87, alertLevel: 'warning', alertMsg: '87% used' },
+            { category: 'entertainment', monthlyLimit: 1500, currentSpent: 1600, percentage: 107, alertLevel: 'danger', alertMsg: 'Budget exceeded by ₹100' },
+            { category: 'recharge', monthlyLimit: 500, currentSpent: 299, percentage: 60, alertLevel: 'safe', alertMsg: '60% used' },
+            { category: 'bills', monthlyLimit: 5000, currentSpent: 3300, percentage: 66, alertLevel: 'safe', alertMsg: '66% used' }
+        ];
+
+        let budgets = [];
+
+        async function loadBudgets() {
+            try { const r = await fetch(`${API}/budget`); const d = await r.json(); budgets = d.success ? d.budgets : DEMO_BUDGETS; } catch (e) { budgets = DEMO_BUDGETS; }
+            renderBudgets();
+        }
+
+        async function loadSuggestions() {
+            let suggestions;
+            try { const r = await fetch(`${API}/budget/suggest`); const d = await r.json(); suggestions = d.suggestions; } catch (e) {
+                suggestions = { food: { suggested: 4500, reason: 'Based on 3-month avg ₹4,200' }, shopping: { suggested: 2500, reason: 'Avg ₹2,100 last 3 months' }, fuel: { suggested: 3500, reason: 'Consistent ~₹3,200' }, entertainment: { suggested: 1200, reason: 'Avg ₹1,000 + buffer' }, recharge: { suggested: 500, reason: 'Fixed ~₹299' }, bills: { suggested: 5000, reason: 'Utilities avg ₹4,500 + seasonal buffer' } };
+            }
+            const el = document.getElementById('suggestions');
+            el.innerHTML = Object.entries(suggestions).map(([cat, s]) => {
+                const m = CAT_META[cat] || CAT_META.other;
+                return `<div class="suggest-item"><div>${m.icon} ${cat.charAt(0).toUpperCase() + cat.slice(1)}</div><div style="text-align:right"><div class="suggest-value">₹${s.suggested.toLocaleString('en-IN')}/mo</div><div class="suggest-reason">${s.reason}</div></div></div>`;
+            }).join('');
+        }
+
+        function renderBudgets() {
+            let totalB = 0, totalS = 0;
+            budgets.forEach(b => { totalB += b.monthlyLimit; totalS += b.currentSpent; });
+            document.getElementById('totalBudget').textContent = '₹' + totalB.toLocaleString('en-IN');
+            document.getElementById('totalSpent').textContent = '₹' + totalS.toLocaleString('en-IN');
+
+            const grid = document.getElementById('budgetGrid');
+            grid.innerHTML = budgets.map(b => {
+                const m = CAT_META[b.category] || CAT_META.other;
+                const pct = Math.min(b.percentage || Math.round((b.currentSpent / b.monthlyLimit) * 100), 150);
+                const level = b.alertLevel || (pct >= 100 ? 'danger' : pct >= 80 ? 'warning' : 'safe');
+                const barColor = level === 'danger' ? '#e74c3c' : level === 'warning' ? '#f59e0b' : '#2ecc71';
+                return `<div class="sb-card budget-card ${level}" style="display:flex;flex-direction:column;gap:0.5rem">
+            <div style="display:flex;align-items:center;gap:0.6rem">
+                <div class="sb-icon" style="background:${m.color}20">${m.icon}</div>
+                <div class="sb-item-info"><div class="sb-item-title">${b.category.charAt(0).toUpperCase() + b.category.slice(1)}</div><div class="sb-item-meta">₹${b.currentSpent.toLocaleString('en-IN')} / ₹${b.monthlyLimit.toLocaleString('en-IN')}</div></div>
+                <span class="sb-badge sb-badge-${level}">${b.alertMsg || pct + '% used'}</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:${Math.min(pct, 100)}%;background:${barColor}"></div></div>
+        </div>`;
+            }).join('') || '<div class="sb-list-item" style="justify-content:center">No budgets set yet</div>';
+        }
+
+        function openModal() { document.getElementById('addModal').classList.add('active'); }
+        function closeModal() { document.getElementById('addModal').classList.remove('active'); }
+
+        async function addBudget() {
+            const cat = document.getElementById('budgetCat').value;
+            const limit = parseFloat(document.getElementById('budgetLimit').value);
+            if (!limit || limit < 100) { alert('Min budget is ₹100'); return; }
+            budgets.push({ category: cat, monthlyLimit: limit, currentSpent: 0, percentage: 0, alertLevel: 'safe', alertMsg: '0% used' });
+            try { await fetch(`${API}/budget`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ category: cat, monthlyLimit: limit }) }); } catch (e) { }
+            renderBudgets(); closeModal();
+        }
+
+        loadBudgets(); loadSuggestions();
+    </script>
+    <script src="voice-assist.js"></script>
+    <script src="ai-chatbot.js"></script>
+</body>
+
+</html>

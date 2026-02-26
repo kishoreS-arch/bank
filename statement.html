@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Statement</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/accessibility.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 768px; /* Max width for content */
+            margin: 0 auto;
+            padding: 1rem;
+            flex-grow: 1;
+        }
+        .header {
+            background-color: #4285F4; /* Google Blue */
+            color: white;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 9999px; /* rounded-full */
+            transition: background-color 0.2s ease;
+        }
+        .back-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a202c; /* Dark text for titles */
+            margin-bottom: 1rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0; /* Light border */
+        }
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        .transaction-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .transaction-name {
+            font-weight: 500;
+            color: #333;
+        }
+        .transaction-date {
+            font-size: 0.875rem;
+            color: #718096; /* Gray text */
+        }
+        .transaction-amount {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .amount-credit {
+            color: #22c55e; /* Green for positive amounts */
+        }
+        .amount-debit {
+            color: #ef4444; /* Red for negative amounts */
+        }
+        .print-button {
+            background-color: #2563eb; /* Blue-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        .print-button:hover {
+            background-color: #1d4ed8; /* Blue-700 */
+        }
+
+        /* Print Modal Styles */
+        .print-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .print-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .print-modal-content {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh; /* Limit height for scrollability */
+            overflow-y: auto; /* Enable scrolling for long content */
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .print-modal-overlay.active .print-modal-content {
+            transform: translateY(0);
+        }
+        .print-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+        .print-modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+        }
+        .print-modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #718096;
+            transition: color 0.2s ease;
+        }
+        .print-modal-close-btn:hover {
+            color: #333;
+        }
+        .print-preview-content {
+            flex-grow: 1;
+            padding: 1rem 0;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            color: #4a5568;
+        }
+        .print-preview-content h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+        .print-preview-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .print-preview-content th,
+        .print-preview-content td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        .print-preview-content th {
+            background-color: #f7fafc;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .print-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .print-modal-actions button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        .print-modal-print-btn {
+            background-color: #2563eb;
+            color: white;
+        }
+        .print-modal-print-btn:hover {
+            background-color: #1d4ed8;
+        }
+        .print-modal-cancel-btn {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+        .print-modal-cancel-btn:hover {
+            background-color: #cbd5e0;
+        }
+
+        /* Media queries for responsiveness */
+        @media (max-width: 640px) {
+            .header h1 {
+                font-size: 1.25rem;
+            }
+            .back-button {
+                font-size: 1rem;
+                padding: 0.3rem;
+            }
+            .container {
+                padding: 0.5rem;
+            }
+            .card {
+                padding: 1rem;
+            }
+            .section-title {
+                font-size: 1.1rem;
+            }
+            .transaction-name {
+                font-size: 0.95rem;
+            }
+            .transaction-date {
+                font-size: 0.8rem;
+            }
+            .transaction-amount {
+                font-size: 0.95rem;
+            }
+            .print-modal-content {
+                padding: 1rem;
+            }
+            .print-modal-header h2 {
+                font-size: 1.25rem;
+            }
+            .print-modal-close-btn {
+                font-size: 1.25rem;
+            }
+            .print-modal-actions {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            .print-modal-actions button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="mode-normal">
+    <header>
+        <h1>SmartBank Statement</h1>
+        <!-- Settings container will be added by accessibility.js -->
+    </header>
+    
+    <div class="header" style="margin-top: 70px;">
+        <a href="home.html" class="back-button" aria-label="Back to Home">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            <span>Back</span>
+        </a>
+        <h1>Statement</h1>
+        <div></div> </div>
+
+    <div class="container">
+        <div class="card">
+            <h2 class="section-title">Filter by</h2>
+            <div class="flex flex-wrap gap-3 mb-4" id="filterButtons">
+                <button data-period="2months" class="filter-btn bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">Last 2 Months</button>
+                <button data-period="6months" class="filter-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200">Last 6 Months</button>
+                <button data-period="1year" class="filter-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200">Last 1 Year</button>
+                <button data-period="custom" class="filter-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200">Custom Date</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title" id="transactionsPeriodTitle">Transactions (Past 2 Months)</h2>
+            <div id="transactionList">
+                </div>
+            <div class="text-center mt-6">
+                <button id="printStatementBtn" class="print-button">Print Statement</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="printModalOverlay" class="print-modal-overlay">
+        <div class="print-modal-content">
+            <div class="print-modal-header">
+                <h2>Print Statement Preview</h2>
+                <button id="printModalCloseBtn" class="print-modal-close-btn" aria-label="Close Print Preview">✖️</button>
+            </div>
+            <div class="print-preview-content" id="printPreviewContent">
+                </div>
+            <div class="print-modal-actions">
+                <button id="printNowBtn" class="print-modal-print-btn">Print Now</button>
+                <button id="printCancelBtn" class="print-modal-cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dummy transaction data for the past 12 months (more extensive for filtering)
+        const allTransactions = [
+            { id: 1, name: "Grocery Store", date: "May 20, 2025", amount: -850.75, type: "debit" },
+            { id: 2, name: "Salary Deposit", date: "May 15, 2025", amount: 45000.00, type: "credit" },
+            { id: 3, name: "Online Shopping", date: "May 12, 2025", amount: -1200.50, type: "debit" },
+            { id: 4, name: "Restaurant Bill", date: "May 08, 2025", amount: -700.00, type: "debit" },
+            { id: 5, name: "Mobile Recharge", date: "May 03, 2025", amount: -299.00, type: "debit" },
+            { id: 6, name: "ATM Withdrawal", date: "Apr 28, 2025", amount: -5000.00, type: "debit" },
+            { id: 7, name: "Investment Return", date: "Apr 25, 2025", amount: 1500.00, type: "credit" },
+            { id: 8, name: "Utility Bill", date: "Apr 22, 2025", amount: -1500.00, type: "debit" },
+            { id: 9, name: "Cab Ride", date: "Apr 18, 2025", amount: -350.00, type: "debit" },
+            { id: 10, name: "Friend Payment", date: "Apr 10, 2025", amount: -2000.00, type: "debit" },
+            { id: 11, name: "Refund - Online Store", date: "Apr 05, 2025", amount: 500.00, type: "credit" },
+            { id: 12, name: "Subscription Fee", date: "Apr 01, 2025", amount: -199.00, type: "debit" },
+            { id: 13, name: "Electricity Bill", date: "Mar 28, 2025", amount: -1800.00, type: "debit" },
+            { id: 14, name: "Internet Bill", date: "Mar 25, 2025", amount: -750.00, type: "debit" },
+            { id: 15, name: "Rent Payment", date: "Mar 01, 2025", amount: -15000.00, type: "debit" },
+            { id: 16, name: "Freelance Income", date: "Feb 20, 2025", amount: 10000.00, type: "credit" },
+            { id: 17, name: "Book Store", date: "Feb 10, 2025", amount: -400.00, type: "debit" },
+            { id: 18, name: "Gym Membership", date: "Jan 30, 2025", amount: -1000.00, type: "debit" },
+            { id: 19, name: "Gift from Aunt", date: "Jan 20, 2025", amount: 2000.00, type: "credit" },
+            { id: 20, name: "Flight Tickets", date: "Dec 15, 2024", amount: -8000.00, type: "debit" },
+            { id: 21, name: "Festival Bonus", date: "Nov 10, 2024", amount: 5000.00, type: "credit" },
+            { id: 22, name: "Medical Bill", date: "Oct 05, 2024", amount: -3000.00, type: "debit" }
+        ];
+
+        let filteredTransactions = []; // To store currently displayed transactions
+        let currentPeriodText = "Past 2 Months"; // To update the title and print preview
+
+        const transactionListDiv = document.getElementById('transactionList');
+        const printStatementBtn = document.getElementById('printStatementBtn');
+        const printModalOverlay = document.getElementById('printModalOverlay');
+        const printModalCloseBtn = document.getElementById('printModalCloseBtn');
+        const printNowBtn = document.getElementById('printNowBtn');
+        const printCancelBtn = document.getElementById('printCancelBtn');
+        const printPreviewContent = document.getElementById('printPreviewContent');
+        const filterButtonsContainer = document.getElementById('filterButtons');
+        const transactionsPeriodTitle = document.getElementById('transactionsPeriodTitle');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+
+        // Function to format currency
+        function formatCurrency(amount) {
+            return `₹ ${amount.toFixed(2)}`;
+        }
+
+        // Function to render transactions
+        function renderTransactions(txns) {
+            transactionListDiv.innerHTML = ''; // Clear previous transactions
+            if (txns.length === 0) {
+                transactionListDiv.innerHTML = '<p class="text-center text-gray-500 py-4">No transactions found for this period.</p>';
+                return;
+            }
+
+            txns.forEach(tx => {
+                const transactionItem = document.createElement('div');
+                transactionItem.classList.add('transaction-item');
+
+                const detailsDiv = document.createElement('div');
+                detailsDiv.classList.add('transaction-details');
+
+                const nameSpan = document.createElement('span');
+                nameSpan.classList.add('transaction-name');
+                nameSpan.textContent = tx.name;
+
+                const dateSpan = document.createElement('span');
+                dateSpan.classList.add('transaction-date');
+                dateSpan.textContent = tx.date;
+
+                detailsDiv.appendChild(nameSpan);
+                detailsDiv.appendChild(dateSpan);
+
+                const amountSpan = document.createElement('span');
+                amountSpan.classList.add('transaction-amount', tx.type === 'credit' ? 'amount-credit' : 'amount-debit');
+                amountSpan.textContent = formatCurrency(tx.amount);
+
+                transactionItem.appendChild(detailsDiv);
+                transactionItem.appendChild(amountSpan);
+                transactionListDiv.appendChild(transactionItem);
+            });
+        }
+
+        // Function to filter transactions based on period
+        function applyFilter(period) {
+            const today = new Date();
+            let startDate = new Date();
+            let periodLabel = "";
+
+            switch (period) {
+                case '2months':
+                    startDate.setMonth(today.getMonth() - 2);
+                    periodLabel = "Past 2 Months";
+                    break;
+                case '6months':
+                    startDate.setMonth(today.getMonth() - 6);
+                    periodLabel = "Past 6 Months";
+                    break;
+                case '1year':
+                    startDate.setFullYear(today.getFullYear() - 1);
+                    periodLabel = "Past 1 Year";
+                    break;
+                case 'custom':
+                    // For a real app, you'd open a date picker here
+                    alert('Custom date range selection is not implemented in this demo.');
+                    // For now, we'll just show all transactions if custom is selected without actual range
+                    filteredTransactions = allTransactions;
+                    periodLabel = "All Transactions (Custom)";
+                    renderTransactions(filteredTransactions);
+                    updateFilterButtonState(period);
+                    transactionsPeriodTitle.textContent = `Transactions (${periodLabel})`;
+                    currentPeriodText = periodLabel;
+                    return; // Exit early for custom as it doesn't filter by date range here
+                default:
+                    startDate.setMonth(today.getMonth() - 2); // Default to 2 months
+                    periodLabel = "Past 2 Months";
+            }
+
+            // Parse transaction dates and filter
+            filteredTransactions = allTransactions.filter(tx => {
+                const txDate = new Date(tx.date);
+                return txDate >= startDate && txDate <= today;
+            });
+
+            // Sort transactions by date, newest first
+            filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            renderTransactions(filteredTransactions);
+            updateFilterButtonState(period);
+            transactionsPeriodTitle.textContent = `Transactions (${periodLabel})`;
+            currentPeriodText = periodLabel; // Update for print preview
+        }
+
+        // Function to update the active state of filter buttons
+        function updateFilterButtonState(activePeriod) {
+            filterButtons.forEach(button => {
+                if (button.dataset.period === activePeriod) {
+                    button.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                    button.classList.add('bg-blue-100', 'text-blue-700');
+                } else {
+                    button.classList.remove('bg-blue-100', 'text-blue-700');
+                    button.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                }
+            });
+        }
+
+        // Event listeners for filter buttons
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                applyFilter(button.dataset.period);
+            });
+        });
+
+        // Function to generate print preview content
+        function generatePrintPreview() {
+            let htmlContent = `
+                <h2 class="text-2xl font-bold text-center mb-4">SmartBank Transaction Statement</h2>
+                <p class="text-center text-gray-600 mb-6">Statement Period: ${currentPeriodText}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount (INR)</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Use filteredTransactions for the print preview
+            filteredTransactions.forEach(tx => {
+                htmlContent += `
+                    <tr>
+                        <td>${tx.date}</td>
+                        <td>${tx.name}</td>
+                        <td class="${tx.type === 'credit' ? 'amount-credit' : 'amount-debit'}">${formatCurrency(tx.amount)}</td>
+                        <td>${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</td>
+                    </tr>
+                `;
+            });
+
+            htmlContent += `
+                    </tbody>
+                </table>
+                <p class="text-sm text-gray-500 mt-8 text-center">Generated on: ${new Date().toLocaleDateString()}</p>
+            `;
+            printPreviewContent.innerHTML = htmlContent;
+        }
+
+        // Event listener for Print Statement button
+        printStatementBtn.addEventListener('click', () => {
+            generatePrintPreview();
+            printModalOverlay.classList.add('active');
+        });
+
+        // Event listener for Print Modal Close button
+        printModalCloseBtn.addEventListener('click', () => {
+            printModalOverlay.classList.remove('active');
+        });
+
+        // Event listener for Print Now button
+        printNowBtn.addEventListener('click', () => {
+            // This will trigger the browser's print dialog for the content of the modal
+            const contentToPrint = printPreviewContent.innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>Print Statement</title>');
+            // Copy relevant styles for printing
+            printWindow.document.write('<style>');
+            printWindow.document.write(`
+                body { font-family: 'Inter', sans-serif; margin: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+                th { background-color: #f0f0f0; }
+                .amount-credit { color: #22c55e; }
+                .amount-debit { color: #ef4444; }
+                h2 { font-size: 24px; text-align: center; margin-bottom: 10px; }
+                p { font-size: 14px; text-align: center; margin-bottom: 5px; }
+            `);
+            printWindow.document.write('</style></head><body>');
+            printWindow.document.write(contentToPrint);
+            printWindow.document.write('</style></head><body>');
+            printWindow.document.close();
+            printWindow.print();
+            printModalOverlay.classList.remove('active'); // Close modal after initiating print
+        });
+
+        // Event listener for Print Modal Cancel button
+        printCancelBtn.addEventListener('click', () => {
+            printModalOverlay.classList.remove('active');
+        });
+
+        // Initial render of transactions when the page loads (default to 2 months)
+        applyFilter('2months');
+    </script>
+</body>
+</html>

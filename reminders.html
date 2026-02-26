@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBank - Bill Reminders</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="shared-theme.css">
+    <style>
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1.3rem 0 0.6rem;
+        }
+
+        .reminder-card.overdue {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .reminder-card.due-soon {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .reminder-card.paid-card {
+            opacity: 0.6;
+        }
+
+        .countdown {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 0.15rem;
+        }
+
+        .countdown.overdue {
+            color: #e74c3c;
+        }
+
+        .countdown.soon {
+            color: #f59e0b;
+        }
+
+        .countdown.ok {
+            color: #666;
+        }
+
+        body.mode-visual .countdown.overdue {
+            color: #ff4c4c;
+        }
+
+        body.mode-visual .countdown.soon {
+            color: #ffd700;
+        }
+
+        body.mode-visual .countdown.ok {
+            color: #00ccff;
+        }
+
+        body.mode-senior .countdown.ok {
+            color: #7c4c1d;
+        }
+    </style>
+</head>
+
+<body class="mode-normal">
+    <script src="shared-theme.js"></script>
+
+    <div class="page-header">
+        <button class="back-btn" onclick="window.location.href='home.html'"><i class="fas fa-arrow-left"></i></button>
+        <h1>🔔 Bill Reminders</h1>
+        <div class="mode-switcher">
+            <button class="mode-btn" data-mode="normal" onclick="SmartBankTheme.applyMode('normal')">Normal</button>
+            <button class="mode-btn" data-mode="senior" onclick="SmartBankTheme.applyMode('senior')">Senior</button>
+            <button class="mode-btn" data-mode="visual" onclick="SmartBankTheme.applyMode('visual')">Visual</button>
+            <button class="dark-toggle" onclick="SmartBankTheme.toggleDark()">🌙</button>
+        </div>
+    </div>
+
+    <div class="page-container">
+        <!-- Stats -->
+        <div class="sb-card-grid cols-3">
+            <div class="stat-card">
+                <div class="stat-value text-red" id="overdueCount">0</div>
+                <div class="stat-label">Overdue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value text-amber" id="upcomingCount">0</div>
+                <div class="stat-label">Due Soon (3 days)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value text-green" id="paidCount">0</div>
+                <div class="stat-label">Paid This Month</div>
+            </div>
+        </div>
+
+        <div id="reminderSections"></div>
+    </div>
+
+    <button class="sb-fab" onclick="openModal()">+</button>
+
+    <div class="sb-modal-overlay" id="addModal">
+        <div class="sb-modal">
+            <h3>Add Reminder</h3>
+            <label class="sb-label">Bill Title</label>
+            <input type="text" class="sb-input" id="reminderTitle" placeholder="e.g. Electricity Bill">
+            <label class="sb-label">Category</label>
+            <select class="sb-select" id="reminderCat">
+                <option value="electricity">⚡ Electricity</option>
+                <option value="credit_card">💳 Credit Card</option>
+                <option value="mobile">📱 Mobile Recharge</option>
+                <option value="subscription">📺 Subscription</option>
+                <option value="insurance">🛡️ Insurance</option>
+                <option value="loan_emi">🏦 Loan EMI</option>
+                <option value="water">💧 Water</option>
+                <option value="gas">🔥 Gas</option>
+                <option value="internet">🌐 Internet</option>
+                <option value="other">📋 Other</option>
+            </select>
+            <label class="sb-label">Amount (₹)</label>
+            <input type="number" class="sb-input" id="reminderAmount" placeholder="1500">
+            <label class="sb-label">Due Date</label>
+            <input type="date" class="sb-input" id="reminderDate">
+            <div class="modal-actions">
+                <button class="sb-btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="sb-btn" onclick="addReminder()">Add Reminder</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin.includes('localhost:3000') ? 'http://localhost:3000/api' : '/api';
+        const CAT_ICONS = { electricity: '⚡', credit_card: '💳', mobile: '📱', subscription: '📺', insurance: '🛡️', loan_emi: '🏦', water: '💧', gas: '🔥', internet: '🌐', other: '📋' };
+        const CAT_COLORS = { electricity: '#f59e0b', credit_card: '#8b5cf6', mobile: '#06b6d4', subscription: '#ec4899', insurance: '#14b8a6', loan_emi: '#3b82f6', water: '#60a5fa', gas: '#f97316', internet: '#10b981', other: '#64748b' };
+
+        const DAY_MS = 86400000;
+        const DEMO_REMINDERS = [
+            { _id: 'r1', title: 'Electricity Bill - TNEB', amount: 1800, dueDate: new Date(Date.now() + 2 * DAY_MS).toISOString(), status: 'pending', category: 'electricity' },
+            { _id: 'r2', title: 'Credit Card - HDFC', amount: 12500, dueDate: new Date(Date.now() + 5 * DAY_MS).toISOString(), status: 'pending', category: 'credit_card' },
+            { _id: 'r3', title: 'Jio Recharge', amount: 299, dueDate: new Date(Date.now() + 8 * DAY_MS).toISOString(), status: 'pending', category: 'mobile' },
+            { _id: 'r4', title: 'Netflix', amount: 649, dueDate: new Date(Date.now() + 12 * DAY_MS).toISOString(), status: 'pending', category: 'subscription' },
+            { _id: 'r5', title: 'Home Loan EMI - SBI', amount: 25000, dueDate: new Date(Date.now() - 1 * DAY_MS).toISOString(), status: 'overdue', category: 'loan_emi' },
+            { _id: 'r6', title: 'Airtel Broadband', amount: 999, dueDate: new Date(Date.now() + 15 * DAY_MS).toISOString(), status: 'pending', category: 'internet' },
+            { _id: 'r7', title: 'Water Bill', amount: 350, dueDate: new Date(Date.now() - 3 * DAY_MS).toISOString(), status: 'overdue', category: 'water' },
+            { _id: 'r8', title: 'LIC Premium', amount: 5000, dueDate: new Date(Date.now() + 20 * DAY_MS).toISOString(), status: 'pending', category: 'insurance' }
+        ];
+
+        let reminders = [];
+
+        async function loadReminders() {
+            try { const r = await fetch(`${API}/reminders`); const d = await r.json(); reminders = d.success ? d.reminders : DEMO_REMINDERS; } catch (e) { reminders = DEMO_REMINDERS; }
+            reminders.forEach(r => { if (r.status === 'pending' && new Date(r.dueDate) < new Date()) r.status = 'overdue'; });
+            renderReminders();
+        }
+
+        function getDaysUntil(dateStr) {
+            const diff = new Date(dateStr).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0);
+            return Math.ceil(diff / DAY_MS);
+        }
+
+        function renderReminders() {
+            const overdue = reminders.filter(r => r.status === 'overdue');
+            const dueSoon = reminders.filter(r => r.status === 'pending' && getDaysUntil(r.dueDate) <= 3 && getDaysUntil(r.dueDate) >= 0);
+            const upcoming = reminders.filter(r => r.status === 'pending' && getDaysUntil(r.dueDate) > 3);
+            const paid = reminders.filter(r => r.status === 'paid');
+
+            document.getElementById('overdueCount').textContent = overdue.length;
+            document.getElementById('upcomingCount').textContent = dueSoon.length;
+            document.getElementById('paidCount').textContent = paid.length;
+
+            let html = '';
+            if (overdue.length) {
+                html += `<div class="section-header"><div class="sb-section-title">🚨 Overdue</div><span class="sb-badge sb-badge-danger">${overdue.length}</span></div>`;
+                html += '<div class="sb-list">' + overdue.map(r => renderCard(r, 'overdue')).join('') + '</div>';
+            }
+            if (dueSoon.length) {
+                html += `<div class="section-header"><div class="sb-section-title">⚠️ Due Soon</div><span class="sb-badge sb-badge-warning">${dueSoon.length}</span></div>`;
+                html += '<div class="sb-list">' + dueSoon.map(r => renderCard(r, 'due-soon')).join('') + '</div>';
+            }
+            if (upcoming.length) {
+                html += `<div class="section-header"><div class="sb-section-title">📋 Upcoming</div><span class="sb-badge sb-badge-info">${upcoming.length}</span></div>`;
+                html += '<div class="sb-list">' + upcoming.map(r => renderCard(r, '')).join('') + '</div>';
+            }
+            if (paid.length) {
+                html += `<div class="section-header"><div class="sb-section-title">✅ Paid</div><span class="sb-badge sb-badge-safe">${paid.length}</span></div>`;
+                html += '<div class="sb-list">' + paid.map(r => renderCard(r, 'paid-card')).join('') + '</div>';
+            }
+            document.getElementById('reminderSections').innerHTML = html || '<div class="sb-list-item" style="justify-content:center">No reminders yet</div>';
+        }
+
+        function renderCard(r, urgency) {
+            const icon = CAT_ICONS[r.category] || '📋';
+            const color = CAT_COLORS[r.category] || '#64748b';
+            const days = getDaysUntil(r.dueDate);
+            const dateStr = new Date(r.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+            let countdownText, countdownClass;
+            if (r.status === 'paid') { countdownText = '✓ Paid'; countdownClass = 'ok'; }
+            else if (days < 0) { countdownText = `${Math.abs(days)} day${Math.abs(days) > 1 ? 's' : ''} overdue`; countdownClass = 'overdue'; }
+            else if (days === 0) { countdownText = 'Due today!'; countdownClass = 'overdue'; }
+            else if (days <= 3) { countdownText = `${days} day${days > 1 ? 's' : ''} left`; countdownClass = 'soon'; }
+            else { countdownText = `Due ${dateStr}`; countdownClass = 'ok'; }
+
+            const actionBtn = r.status !== 'paid' ? `<button class="sb-btn sb-btn-success sb-btn-sm" onclick="markPaid('${r._id}')">Mark Paid</button>` : '<span class="text-green" style="font-weight:700">✓ Paid</span>';
+
+            return `<div class="sb-card reminder-card ${urgency}" style="display:flex;align-items:center;gap:0.8rem;padding:0.9rem 1.2rem">
+        <div class="sb-icon" style="background:${color}20">${icon}</div>
+        <div class="sb-item-info"><div class="sb-item-title">${r.title}</div><div class="sb-item-meta">${dateStr} • ${r.category.replace('_', ' ')}</div></div>
+        <div class="sb-item-right"><div class="sb-item-value">₹${r.amount.toLocaleString('en-IN')}</div><div class="countdown ${countdownClass}">${countdownText}</div>${actionBtn}</div>
+    </div>`;
+        }
+
+        async function markPaid(id) {
+            const r = reminders.find(r => r._id === id);
+            if (r) r.status = 'paid';
+            try { await fetch(`${API}/reminders/${id}/pay`, { method: 'PUT' }); } catch (e) { }
+            renderReminders();
+        }
+
+        function openModal() {
+            document.getElementById('addModal').classList.add('active');
+            document.getElementById('reminderDate').value = new Date(Date.now() + DAY_MS).toISOString().split('T')[0];
+        }
+        function closeModal() { document.getElementById('addModal').classList.remove('active'); }
+
+        async function addReminder() {
+            const title = document.getElementById('reminderTitle').value.trim();
+            const amount = parseFloat(document.getElementById('reminderAmount').value);
+            const dueDate = document.getElementById('reminderDate').value;
+            const category = document.getElementById('reminderCat').value;
+            if (!title || !amount || !dueDate) { alert('Fill all fields'); return; }
+            reminders.push({ _id: 'r' + Date.now(), title, amount, dueDate: new Date(dueDate).toISOString(), status: 'pending', category });
+            try { await fetch(`${API}/reminders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, amount, dueDate, category }) }); } catch (e) { }
+            renderReminders(); closeModal();
+        }
+
+        loadReminders();
+    </script>
+    <script src="voice-assist.js"></script>
+    <script src="ai-chatbot.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBank - Scan & Pay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="shared-theme.css">
+    <style>
+        body {
+            background: #0a0a0a;
+            overflow: hidden;
+        }
+
+        .scan-page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .scan-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            z-index: 10;
+        }
+
+        .scan-header .back-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .scan-header h1 {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 700;
+            flex: 1;
+            margin: 0;
+        }
+
+        .scan-header .icon-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .camera-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #cameraFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Scan overlay */
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+        }
+
+        .scan-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 260px;
+            height: 260px;
+        }
+
+        .scan-corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-color: #00ff88;
+        }
+
+        .scan-corner.tl {
+            top: 0;
+            left: 0;
+            border-top: 3px solid;
+            border-left: 3px solid;
+            border-radius: 4px 0 0 0;
+        }
+
+        .scan-corner.tr {
+            top: 0;
+            right: 0;
+            border-top: 3px solid;
+            border-right: 3px solid;
+            border-radius: 0 4px 0 0;
+        }
+
+        .scan-corner.bl {
+            bottom: 0;
+            left: 0;
+            border-bottom: 3px solid;
+            border-left: 3px solid;
+            border-radius: 0 0 0 4px;
+        }
+
+        .scan-corner.br {
+            bottom: 0;
+            right: 0;
+            border-bottom: 3px solid;
+            border-right: 3px solid;
+            border-radius: 0 0 4px 0;
+        }
+
+        .scan-line {
+            position: absolute;
+            left: 5%;
+            width: 90%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            animation: scanMove 2s ease-in-out infinite;
+        }
+
+        @keyframes scanMove {
+
+            0%,
+            100% {
+                top: 5%;
+            }
+
+            50% {
+                top: 95%;
+            }
+        }
+
+        .scan-text {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            padding: 1.5rem;
+        }
+
+        .scan-text strong {
+            color: #00ff88;
+        }
+
+        /* Dark overlay around scan frame */
+        .scan-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+
+        .scan-frame::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: rgba(0, 0, 0, 0);
+            box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.55);
+            z-index: -1;
+        }
+
+        /* Bottom actions - GPay style */
+        .scan-bottom {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 24px 24px 0 0;
+            padding: 1.5rem;
+            z-index: 10;
+        }
+
+        .scan-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .scan-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            cursor: pointer;
+        }
+
+        .scan-action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            transition: transform 0.2s;
+        }
+
+        .scan-action-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .scan-action-label {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+        }
+
+        /* UPI input bar */
+        .upi-input-bar {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .upi-input-bar input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 0.65rem 1rem;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .upi-input-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .upi-input-bar input:focus {
+            border-color: #00ff88;
+        }
+
+        .upi-input-bar button {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            padding: 0.65rem 1rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .upi-input-bar button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Payment modal */
+        .pay-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .pay-modal.active {
+            display: flex;
+        }
+
+        .pay-card {
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+            color: #fff;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .pay-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            margin: 0 auto 1rem;
+        }
+
+        .pay-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .pay-upi {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 1.5rem;
+        }
+
+        .pay-amount-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #3b82f6;
+            color: #fff;
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            width: 80%;
+            outline: none;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pay-amount-input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .pay-note {
+            width: 80%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0.6rem;
+            color: #fff;
+            font-size: 0.8rem;
+            outline: none;
+            text-align: center;
+            margin: 0.5rem auto 1.5rem;
+        }
+
+        .pay-btn {
+            width: 80%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .pay-btn:hover {
+            transform: scale(1.03);
+        }
+
+        .pay-cancel {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 0.8rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Success animation */
+        .pay-success {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 2rem;
+        }
+
+        .pay-success.active {
+            display: flex;
+        }
+
+        .success-tick {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            animation: scaleIn 0.4s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        /* Mode-aware */
+        body.mode-senior .scan-bottom {
+            background: rgba(217, 119, 6, 0.95);
+        }
+
+        body.mode-senior .scan-action-label {
+            color: #fff9db;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        body.mode-visual .scan-bottom {
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 1px solid #00ffff;
+        }
+
+        body.mode-visual .scan-corner {
+            border-color: #00ffff;
+        }
+
+        body.mode-visual .scan-line {
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+        }
+    </style>
+</head>
+
+<body class="mode-normal">
+    <script src="shared-theme.js"></script>
+
+    <div class="scan-page">
+        <!-- Header -->
+        <div class="scan-header">
+            <button class="back-btn" onclick="window.location.href='home.html'"><i
+                    class="fas fa-arrow-left"></i></button>
+            <h1>Scan & Pay</h1>
+            <button class="icon-btn" onclick="toggleFlash()" title="Toggle Flash"><i class="fas fa-bolt"></i></button>
+        </div>
+
+        <!-- Camera Area -->
+        <div class="camera-area">
+            <video id="cameraFeed" autoplay playsinline muted></video>
+            <div class="scan-overlay">
+                <div class="scan-frame">
+                    <div class="scan-corner tl"></div>
+                    <div class="scan-corner tr"></div>
+                    <div class="scan-corner bl"></div>
+                    <div class="scan-corner br"></div>
+                    <div class="scan-line"></div>
+                </div>
+            </div>
+            <div class="scan-text" id="scanStatus">Point camera at any <strong>UPI QR code</strong> to pay instantly
+            </div>
+        </div>
+
+        <!-- Bottom Panel - GPay Style -->
+        <div class="scan-bottom">
+            <div class="scan-actions">
+                <div class="scan-action" onclick="showPayModal('self')">
+                    <div class="scan-action-icon" style="background:rgba(59,130,246,0.2)">💳</div>
+                    <div class="scan-action-label">Self Transfer</div>
+                </div>
+                <div class="scan-action" onclick="showPayModal('contact')">
+                    <div class="scan-action-icon" style="background:rgba(16,185,129,0.2)">👤</div>
+                    <div class="scan-action-label">Pay Contact</div>
+                </div>
+                <div class="scan-action" onclick="showPayModal('phone')">
+                    <div class="scan-action-icon" style="background:rgba(245,158,11,0.2)">📱</div>
+                    <div class="scan-action-label">Phone Number</div>
+                </div>
+                <div class="scan-action" onclick="showPayModal('bank')">
+                    <div class="scan-action-icon" style="background:rgba(139,92,246,0.2)">🏦</div>
+                    <div class="scan-action-label">Bank Account</div>
+                </div>
+            </div>
+            <div class="upi-input-bar">
+                <input type="text" id="upiInput" placeholder="Enter UPI ID (e.g. name@upi)">
+                <button onclick="payByUPI()">Pay →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="pay-modal" id="payModal">
+        <div class="pay-card" id="payCard">
+            <div class="pay-avatar" id="payAvatar">👤</div>
+            <div class="pay-name" id="payName">Enter Details</div>
+            <div class="pay-upi" id="payUpi">UPI ID</div>
+            <input type="number" class="pay-amount-input" id="payAmount" placeholder="₹0">
+            <input type="text" class="pay-note" id="payNote" placeholder="Add a note (optional)">
+            <button class="pay-btn" onclick="processPayment()">Pay Now</button>
+            <button class="pay-cancel" onclick="closePayModal()">Cancel</button>
+        </div>
+        <div class="pay-success" id="paySuccess">
+            <div class="success-tick">✓</div>
+            <div style="font-size:1.5rem;font-weight:800;color:#fff">Payment Successful!</div>
+            <div style="font-size:2rem;font-weight:900;color:#00ff88" id="paidAmount">₹0</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.5)" id="paidTo">To: name@upi</div>
+            <button class="pay-btn" style="margin-top:1rem" onclick="window.location.href='home.html'">Done ✓</button>
+        </div>
+    </div>
+
+    <script src="voice-assist.js"></script>
+
+    <script>
+        // Camera setup
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+                });
+                document.getElementById('cameraFeed').srcObject = stream;
+
+                // Simulate QR detection after random delay
+                simulateQRDetection();
+            } catch (e) {
+                document.getElementById('scanStatus').innerHTML =
+                    '📷 Camera access needed for scanning.<br>You can also enter a <strong>UPI ID</strong> below to pay.';
+                showDemoQR();
+            }
+        }
+
+        function simulateQRDetection() {
+            // In a real app, you'd use a QR decoding library here
+            // For demo, simulate detecting a QR code after 5 seconds
+            setTimeout(() => {
+                const demoPayees = [
+                    { name: 'Coffee Shop', upi: 'coffee@ybl', avatar: '☕' },
+                    { name: 'Grocery Store', upi: 'grocery@paytm', avatar: '🛒' },
+                    { name: 'Electric Bill', upi: 'tneb@sbi', avatar: '⚡' }
+                ];
+                const payee = demoPayees[Math.floor(Math.random() * demoPayees.length)];
+
+                document.getElementById('scanStatus').innerHTML =
+                    `<strong style="color:#00ff88">✓ QR Detected!</strong> — ${payee.name}`;
+
+                // Vibrate if available
+                if (navigator.vibrate) navigator.vibrate(100);
+
+                setTimeout(() => showPayModal('qr', payee), 800);
+            }, 4000);
+        }
+
+        function showDemoQR() {
+            // Show a demo viewfinder for non-camera devices
+            const area = document.querySelector('.camera-area');
+            area.style.background = 'linear-gradient(135deg, #0a1628, #0d2137)';
+        }
+
+        let flashOn = false;
+        function toggleFlash() {
+            flashOn = !flashOn;
+            // Flash toggle with camera track
+            const video = document.getElementById('cameraFeed');
+            if (video.srcObject) {
+                const track = video.srcObject.getVideoTracks()[0];
+                if (track.getCapabilities && track.getCapabilities().torch) {
+                    track.applyConstraints({ advanced: [{ torch: flashOn }] });
+                }
+            }
+        }
+
+        function showPayModal(type, payee) {
+            const modal = document.getElementById('payModal');
+            const card = document.getElementById('payCard');
+            const success = document.getElementById('paySuccess');
+            card.style.display = 'block';
+            success.style.display = 'none';
+            modal.classList.add('active');
+
+            if (payee) {
+                document.getElementById('payAvatar').textContent = payee.avatar || '👤';
+                document.getElementById('payName').textContent = payee.name;
+                document.getElementById('payUpi').textContent = payee.upi;
+            } else if (type === 'self') {
+                document.getElementById('payAvatar').textContent = '💳';
+                document.getElementById('payName').textContent = 'Self Transfer';
+                document.getElementById('payUpi').textContent = 'Between your accounts';
+            } else if (type === 'contact') {
+                document.getElementById('payAvatar').textContent = '👤';
+                document.getElementById('payName').textContent = 'Pay to Contact';
+                document.getElementById('payUpi').textContent = 'Enter UPI ID below';
+            } else if (type === 'phone') {
+                document.getElementById('payAvatar').textContent = '📱';
+                document.getElementById('payName').textContent = 'Pay via Phone';
+                document.getElementById('payUpi').textContent = 'Enter phone number';
+            } else if (type === 'bank') {
+                document.getElementById('payAvatar').textContent = '🏦';
+                document.getElementById('payName').textContent = 'Bank Transfer';
+                document.getElementById('payUpi').textContent = 'Enter account details';
+            }
+
+            document.getElementById('payAmount').value = '';
+            document.getElementById('payAmount').focus();
+        }
+
+        function closePayModal() {
+            document.getElementById('payModal').classList.remove('active');
+        }
+
+        function processPayment() {
+            const amount = document.getElementById('payAmount').value;
+            if (!amount || amount <= 0) { alert('Enter a valid amount'); return; }
+
+            const card = document.getElementById('payCard');
+            const success = document.getElementById('paySuccess');
+
+            // Show loading
+            card.innerHTML = '<div style="padding:2rem;text-align:center"><div style="width:50px;height:50px;border:3px solid rgba(0,255,136,0.2);border-top:3px solid #00ff88;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem"></div><div style="color:#fff;font-weight:600">Processing Payment...</div><div style="color:rgba(255,255,255,0.4);font-size:0.75rem;margin-top:0.3rem">Verifying with UPI</div></div>';
+
+            setTimeout(() => {
+                card.style.display = 'none';
+                success.classList.add('active');
+                document.getElementById('paidAmount').textContent = '₹' + parseInt(amount).toLocaleString('en-IN');
+                document.getElementById('paidTo').textContent = 'To: ' + document.getElementById('payUpi')?.textContent || 'UPI Payment';
+
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            }, 2000);
+        }
+
+        function payByUPI() {
+            const upi = document.getElementById('upiInput').value.trim();
+            if (!upi) { alert('Enter a UPI ID'); return; }
+
+            const name = upi.split('@')[0];
+            showPayModal('upi', { name: name.charAt(0).toUpperCase() + name.slice(1), upi: upi, avatar: '👤' });
+        }
+
+        startCamera();
+    </script>
+</body>
+
+</html>

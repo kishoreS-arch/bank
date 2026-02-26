@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transfer Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/accessibility.css">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    }
+    .btn-primary {
+      transition: transform 0.2s, background-color 0.3s;
+    }
+    .btn-primary:hover {
+      transform: scale(1.05);
+      background-color: #4338ca;
+    }
+    .input-field {
+      transition: border-color 0.3s;
+    }
+    .input-field:focus {
+      border-color: #4f46e5;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+    .modal {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Header for accessibility mode selector */
+    header {
+      background: #0077cc;
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+    }
+    header h1 {
+      margin: 0;
+      font-weight: 900;
+      font-size: 1.8rem;
+      user-select: none;
+    }
+  </style>
+</head>
+<body class="mode-normal min-h-screen flex flex-col">
+  <header>
+    <h1>SmartBank Transfer</h1>
+    <!-- Settings container will be added by accessibility.js -->
+  </header>
+  <div class="container mx-auto p-6 max-w-md bg-white rounded-2xl shadow-lg mt-24">
+    <!-- Back Button -->
+    <div class="mb-4">
+      <a href="home.html" class="btn-primary inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">Back</a>
+    </div>
+
+    <!-- Header -->
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Transfer Money</h1>
+
+    <!-- Quick Actions Bar -->
+    <div class="grid grid-cols-3 gap-4 mb-10">
+      <button onclick="showSection('upi')" class="btn-primary bg-indigo-600 text-white px-6 py-3 rounded-lg text-sm font-semibold">UPI ID</button>
+      <button onclick="showSection('phone')" class="btn-primary bg-indigo-600 text-white px-6 py-3 rounded-lg text-sm font-semibold">Phone Number</button>
+      <button onclick="showSection('bank')" class="btn-primary bg-indigo-600 text-white px-6 py-3 rounded-lg text-sm font-semibold">Bank Transfer</button>
+    </div>
+
+    <!-- Transfer Sections -->
+    <div id="upi" class="transfer-section hidden">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Transfer via UPI ID</h2>
+      <input id="upi-id" type="text" placeholder="Enter UPI ID (e.g., name@bank)" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="upi-amount" type="number" placeholder="Enter amount (₹)" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="upi-note" type="text" placeholder="Note (optional)" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <button onclick="initiateTransfer('upi')" class="btn-primary bg-teal-500 text-white px-4 py-3 rounded-lg w-full font-semibold">Proceed</button>
+    </div>
+
+    <div id="phone" class="transfer-section hidden">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Transfer via Phone Number</h2>
+      <input id="phone-number" type="tel" placeholder="Enter phone number" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="phone-amount" type="number" placeholder="Enter amount (₹)" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="phone-note" type="text" placeholder="Note (optional)" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <button onclick="initiateTransfer('phone')" class="btn-primary bg-teal-500 text-white px-4 py-3 rounded-lg w-full font-semibold">Proceed</button>
+    </div>
+
+    <div id="bank" class="transfer-section hidden">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Transfer via Bank Details</h2>
+      <input id="bank-account" type="text" placeholder="Enter account number" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="bank-ifsc" type="text" placeholder="Enter IFSC code" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="bank-name" type="text" placeholder="Enter recipient name" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="bank-amount" type="number" placeholder="Enter amount (₹)" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <input id="bank-note" type="text" placeholder="Note (optional)" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+      <button onclick="initiateTransfer('bank')" class="btn-primary bg-teal-500 text-white px-4 py-3 rounded-lg w-full font-semibold">Proceed</button>
+    </div>
+
+    <!-- PIN Modal -->
+    <div id="pin-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm modal">
+        <h2 class="text-xl font-semibold mb-4 text-gray-700">Enter UPI PIN</h2>
+        <input id="upi-pin" type="password" placeholder="Enter 4-6 digit PIN" class="input-field w-full p-3 mb-3 border border-gray-300 rounded-lg">
+        <button onclick="confirmTransfer()" class="btn-primary bg-teal-500 text-white px-4 py-3 rounded-lg w-full font-semibold">Confirm</button>
+        <button onclick="closePinModal()" class="btn-primary bg-red-500 text-white px-4 py-3 rounded-lg w-full mt-3 font-semibold">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Status Message -->
+    <div id="status-message" class="hidden mt-6 p-4 rounded-lg text-white text-center"></div>
+  </div>
+
+  <script>
+    let currentMethod = '';
+
+    function showSection(section) {
+      document.querySelectorAll('.transfer-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById(section).classList.remove('hidden');
+      currentMethod = section;
+    }
+
+    function initiateTransfer(method) {
+      let amount, recipient;
+      if (method === 'upi') {
+        amount = document.getElementById('upi-amount').value;
+        recipient = document.getElementById('upi-id').value;
+      } else if (method === 'phone') {
+        amount = document.getElementById('phone-amount').value;
+        recipient = document.getElementById('phone-number').value;
+      } else if (method === 'bank') {
+        amount = document.getElementById('bank-amount').value;
+        recipient = document.getElementById('bank-account').value;
+      }
+
+      if (!amount || amount <= 0 || amount > 100000) {
+        showStatus('Error: Amount must be between ₹1 and ₹1,00,000.', 'bg-red-500');
+        return;
+      }
+      if (!recipient) {
+        showStatus('Error: Please enter recipient details.', 'bg-red-500');
+        return;
+      }
+
+      document.getElementById('pin-modal').classList.remove('hidden');
+    }
+
+    function confirmTransfer() {
+      const pin = document.getElementById('upi-pin').value;
+      if (pin.length < 4 || pin.length > 6) {
+        showStatus('Error: PIN must be 4-6 digits.', 'bg-red-500');
+        return;
+      }
+
+      // Simulate transaction processing
+      showStatus('Transaction successful!', 'bg-teal-500');
+      closePinModal();
+      clearInputs();
+    }
+
+    function closePinModal() {
+      document.getElementById('pin-modal').classList.add('hidden');
+      document.getElementById('upi-pin').value = '';
+    }
+
+    function showStatus(message, bgClass) {
+      const statusDiv = document.getElementById('status-message');
+      statusDiv.textContent = message;
+      statusDiv.className = `mt-6 p-4 rounded-lg text-white text-center ${bgClass}`;
+      statusDiv.classList.remove('hidden');
+      setTimeout(() => statusDiv.classList.add('hidden'), 3000);
+    }
+
+    function clearInputs() {
+      document.querySelectorAll('input').forEach(input => input.value = '');
+    }
+
+    // Show UPI section by default
+    showSection('upi');
+  </script>
+  <script src="js/accessibility.js"></script>
+</body>
+</html>

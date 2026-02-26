@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        /* Updated background with a more relevant image */
+        body {
+            background-image: url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Replace with a suitable bank-related image URL */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body class="flex justify-center items-center min-h-screen p-4">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md transition-transform hover:scale-105">
+        <div class="mb-6 text-center">
+            <h1 class="text-3xl font-semibold text-blue-600">MyBank</h1>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+            <div>
+                <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
+                <input type="text" id="username" name="username" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your username" required>
+                <div id="username-error" class="text-red-500 text-xs italic" style="display: none;"></div>
+            </div>
+
+            <div>
+                <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                <input type="password" id="password" name="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your password" required>
+                <div id="password-error" class="text-red-500 text-xs italic" style="display: none;"></div>
+            </div>
+
+            <div>
+                <label for="captcha" class="block text-gray-700 text-sm font-bold mb-2">CAPTCHA</label>
+                <div class="flex items-center">
+                    <input type="text" id="captcha" name="captcha" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2" placeholder="Enter CAPTCHA" required>
+                    <canvas id="captcha-canvas" width="100" height="38" class="border rounded"></canvas>
+                    <button id="refresh-captcha" type="button" class="ml-2 text-gray-500 hover:text-blue-600 focus:outline-none focus:shadow-outline" title="Refresh CAPTCHA">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="captcha-error" class="text-red-500 text-xs italic" style="display: none;"></div>
+            </div>
+
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition duration-300 ease-in-out">
+                Login
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <a href="#" id="forgot-password" class="text-sm text-blue-500 hover:text-blue-700 focus:outline-none focus:shadow-outline">
+                Forgot Password?
+            </a>
+            <span class="mx-2 text-gray-500">|</span>
+            <a href="#" id="signup" class="text-sm text-blue-500 hover:text-blue-700 focus:outline-none focus:shadow-outline">
+                Sign Up
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('login-form');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const captchaInput = document.getElementById('captcha');
+            const captchaCanvas = document.getElementById('captcha-canvas');
+            const refreshCaptchaButton = document.getElementById('refresh-captcha');
+            const usernameError = document.getElementById('username-error');
+            const passwordError = document.getElementById('password-error');
+            const captchaError = document.getElementById('captcha-error');
+            const forgotPasswordLink = document.getElementById('forgot-password');
+            const signUpLink = document.getElementById('signup');
+
+
+            let generatedCaptchaText = '';
+
+            function generateCaptcha() {
+                const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                let result = '';
+                for (let i = 0; i < 6; i++) {
+                    result += characters.charAt(Math.floor(Math.random() * characters.length));
+                }
+                return result;
+            }
+
+            function drawCaptcha() {
+                const ctx = captchaCanvas.getContext('2d');
+                ctx.clearRect(0, 0, captchaCanvas.width, captchaCanvas.height);
+                ctx.fillStyle = '#f0f0f0'; // Light background
+                ctx.fillRect(0, 0, captchaCanvas.width, captchaCanvas.height);
+                ctx.font = '20px Roboto'; // Use Roboto font
+                ctx.fillStyle = '#333'; // Dark text
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                generatedCaptchaText = generateCaptcha();
+                ctx.fillText(generatedCaptchaText, captchaCanvas.width / 2, captchaCanvas.height / 2);
+
+                // Add a line for added complexity
+                ctx.strokeStyle = '#888';
+                ctx.beginPath();
+                ctx.moveTo(0, captchaCanvas.height / 2);
+                ctx.lineTo(captchaCanvas.width, captchaCanvas.height / 2);
+                ctx.stroke();
+            }
+
+            drawCaptcha();
+
+            refreshCaptchaButton.addEventListener('click', function() {
+                drawCaptcha();
+                captchaInput.value = ''; // Clear the input field when refreshing
+                captchaError.style.display = 'none'; // Hide error message
+            });
+
+            loginForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                let hasErrors = false;
+
+                usernameError.style.display = 'none';
+                passwordError.style.display = 'none';
+                captchaError.style.display = 'none';
+
+                if (!usernameInput.value.trim()) {
+                    usernameError.textContent = 'Username is required';
+                    usernameError.style.display = 'block';
+                    hasErrors = true;
+                }
+
+                if (!passwordInput.value.trim()) {
+                    passwordError.textContent = 'Password is required';
+                    passwordError.style.display = 'block';
+                    hasErrors = true;
+                }
+
+                if (captchaInput.value !== generatedCaptchaText) {
+                    captchaError.textContent = 'CAPTCHA is incorrect';
+                    captchaError.style.display = 'block';
+                    hasErrors = true;
+                }
+
+                if (!hasErrors) {
+                    // Simulate a successful login (replace with actual authentication logic)
+                    alert('Login successful! (This is a simulation)');
+                    loginForm.reset();
+                    drawCaptcha(); // Refresh captcha after successful submission
+                }
+            });
+
+            forgotPasswordLink.addEventListener('click', function(event) {
+                event.preventDefault();
+                alert('Forgot Password functionality not implemented yet.');
+            });
+
+            signUpLink.addEventListener('click', function(event) {
+                event.preventDefault();
+                alert('Sign Up functionality not implemented yet.');
+            });
+        });
+    </script>
+</body>
+</html>
